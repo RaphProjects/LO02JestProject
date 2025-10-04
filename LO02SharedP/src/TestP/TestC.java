@@ -1,5 +1,5 @@
 package TestP;
 
 public class TestC {
-	//Ceci est un commentaire
+	//Ceci est un commentair
 }
