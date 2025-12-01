@@ -13,4 +13,17 @@ public class Tour {
         numeroTour++;
     }
 
+	public void distribuerCartes() {
+		
+	}
+	
+	public void gererOffres() {
+		
+	}
+	
+	public void gererPrises() {
+		
+	}
+	
+	
 }

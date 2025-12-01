@@ -1,6 +1,6 @@
 package jestPackage;
 
 public enum Couleur {
-	PIQUE,TREFLE,CARREAUX,COEUR
+	PIQUE,TREFLE,CARREAU,COEUR
 
 }

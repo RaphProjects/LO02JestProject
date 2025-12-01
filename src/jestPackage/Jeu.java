@@ -7,8 +7,12 @@ public class Jeu {
 	private Tour tour;
 	
 	public Jeu() {
-		this.pioche = new Pioche();
+		this.pioche = new Pioche(this);
 	}
+	
+	public Joueur[] getJoueurs() {
+        return this.joueurs;
+    }
 	
 	
 	public void initialiserJoueurs() {
@@ -50,6 +54,14 @@ public class Jeu {
 		Jeu jeuCourant = new Jeu();
 		jeuCourant.initialiserJoueurs();
 		jeuCourant.initialiserPioche();
+		Tour tourCourant = new Tour(jeuCourant);
+		while(jeuCourant.pioche.estPiochable()) {
+			tourCourant.distribuerCartes();
+			tourCourant.gererOffres();
+			tourCourant.gererPrises();
+			tourCourant.passerAuTourSuivant();
+			
+		}
 		
 		
 		
