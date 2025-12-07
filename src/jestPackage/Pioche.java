@@ -55,7 +55,7 @@ public class Pioche {
 	}
 	
 	public boolean estPiochable() {
-		return this.cartes.size()>=(this.jeu.getJoueurs().length)*2;
+		return this.cartes.size()>=(this.jeu.getJoueurs().size())*2;
 	}
 
 }

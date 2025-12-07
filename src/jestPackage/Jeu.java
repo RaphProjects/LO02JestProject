@@ -2,15 +2,17 @@ package jestPackage;
 import java.util.*;
 
 public class Jeu {
-	private Joueur[] joueurs;
+	private ArrayList<Joueur> joueurs;
 	private Pioche pioche;
 	private Tour tour;
+
 	
 	public Jeu() {
 		this.pioche = new Pioche(this);
+		this.joueurs = new ArrayList<Joueur>();
 	}
 	
-	public Joueur[] getJoueurs() {
+	public ArrayList<Joueur> getJoueurs() {
         return this.joueurs;
     }
 	
@@ -32,11 +34,11 @@ public class Jeu {
 			int joueurIsVirtuel = scanner.nextInt();
 			if (joueurIsVirtuel == 0) {
 				System.out.println("Creation du joueur reel \"Joueur " + compteurJoueur + "\".");
-				this.joueurs[compteurJoueur-1] = new JoueurReel("Joueur " + compteurJoueur);
+				this.joueurs.add(new JoueurReel("Joueur " + compteurJoueur)) ;
 				compteurJoueur++;
 			} else if (joueurIsVirtuel == 1) {
 				System.out.println("Creation du joueur virtuel \"Joueur " + compteurJoueur + "\".");
-				this.joueurs[compteurJoueur-1] = new JoueurVirtuel("Joueur " + compteurJoueur);
+				this.joueurs.add(new JoueurVirtuel("Joueur " + compteurJoueur)) ;
 				compteurJoueur++;
 			} else {
 				System.out.println("Valeur invalide. Veuillez entrer 0 pour reel ou 1 pour virtuel.");
@@ -60,7 +62,6 @@ public class Jeu {
 			tourCourant.gererOffres();
 			tourCourant.gererPrises();
 			tourCourant.passerAuTourSuivant();
-			
 		}
 		
 		
