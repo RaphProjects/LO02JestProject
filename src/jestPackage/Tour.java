@@ -36,6 +36,16 @@ public class Tour {
 		}
 	}
 	
+	public void afficherOffres() {
+		System.out.println("Offres des joueurs :");
+		for (Joueur joueur : this.jeu.getJoueurs()) {
+			Offre offre = joueur.getOffre();
+			String carteVisible = (offre.getCarteVisible() != null) ? offre.getCarteVisible().getNom() : "Aucune";
+			String carteCachee = (offre.getCarteCachee() != null) ? offre.getCarteCachee().getNom() : "Aucune";
+			System.out.println(joueur.nom + " - Carte Visible: " + carteVisible + ", Carte Cachee: " + carteCachee);
+		}
+	}
+	
 	public void gererPrises() {
 		
 	}

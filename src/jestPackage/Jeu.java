@@ -58,7 +58,6 @@ public class Jeu {
 				System.out.println("Valeur invalide. Veuillez entrer 0 pour reel ou 1 pour virtuel.");
 			}
 		}
-		scanner.close();
 	}
 	
 	public void initialiserPioche() {
@@ -75,14 +74,20 @@ public class Jeu {
 		
 		Tour tourCourant = new Tour(jeuCourant);
 		
-		
+		/* 
+		// Boucle de jeu principale, desactivée pour l'instant pour tester le reste
 		while(jeuCourant.pioche.estPiochable()) {
 			tourCourant.distribuerCartes();
 			tourCourant.gererOffres();
 			tourCourant.gererPrises();
 			tourCourant.passerAuTourSuivant();
 		}
+		*/
 		
+		// Main de test temporaire pour tester les offres
+		tourCourant.distribuerCartes();
+		tourCourant.gererOffres();
+		tourCourant.afficherOffres();
 		
 		
 	}

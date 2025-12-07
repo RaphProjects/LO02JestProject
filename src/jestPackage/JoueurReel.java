@@ -19,18 +19,19 @@ public class JoueurReel extends Joueur {
 
 	public void deciderOffre() {
 		Scanner scanner = new Scanner(System.in);
-		int numchoix = 0;
+		
 		System.out.println("Joueur " + this.nom + ", veuillez choisir votre offre.");
 		System.out.println("Votre main :");
 		for (int i = 0; i < this.main.size(); i++) {
 			System.out.println((i + 1) + ": " + this.main.get(i).toString());
 		}
-		System.out.print("Entrez le numéro de la carte que vous souhaitez offrir visible: ");
+		System.out.println("Entrez le numéro de la carte que vous souhaitez offrir visible: ");
+		int numchoix = scanner.nextInt();
 		while (numchoix < 1 || numchoix > this.main.size()) {
-			numchoix = scanner.nextInt();
 			if (numchoix < 1 || numchoix > this.main.size()) {
-				System.out.print("Choix invalide. Veuillez entrer un numéro valide : ");
+				System.out.println("Choix invalide. Veuillez entrer un numéro valide : ");
 			}
+			numchoix = scanner.nextInt();
 		}
 		System.out.println("Vous avez choisi de faire une offre avec la carte : " + this.main.get(numchoix-1).toString());
 		
