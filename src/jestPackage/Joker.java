@@ -5,5 +5,8 @@ public class Joker extends Carte{
 		super(nom, bandeauTrophee);
 	}
 	
+	public String toString() {
+		return "Joker[nom=" + nom + ", bandeauTrophee=" + bandeauTrophee + "]";
+	}
 
 }

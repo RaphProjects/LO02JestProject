@@ -2,14 +2,14 @@ package jestPackage;
 import java.util.*;
 
 public class Jeu {
-	private ArrayList<Joueur> joueurs;
+	private ArrayList<Joueur> joueurs = new ArrayList<Joueur>();
+	private ArrayList<Carte> trophees = new ArrayList<Carte>();
 	private Pioche pioche;
 	private Tour tour;
 
 	
 	public Jeu() {
 		this.pioche = new Pioche(this);
-		this.joueurs = new ArrayList<Joueur>();
 	}
 	
 	public ArrayList<Joueur> getJoueurs() {
@@ -18,6 +18,16 @@ public class Jeu {
 	
 	public Pioche getPioche() {
 		return this.pioche;
+	}
+	
+	public void setTropheeJeu() {
+		for (int i = 0; i < 2; i++) {
+			this.trophees.add(pioche.piocher());
+		}
+	}
+	
+	public ArrayList<Carte> getTrophees() {
+		return this.trophees;
 	}
 	
 	
@@ -48,6 +58,7 @@ public class Jeu {
 				System.out.println("Valeur invalide. Veuillez entrer 0 pour reel ou 1 pour virtuel.");
 			}
 		}
+		scanner.close();
 	}
 	
 	public void initialiserPioche() {
@@ -60,7 +71,11 @@ public class Jeu {
 		Jeu jeuCourant = new Jeu();
 		jeuCourant.initialiserJoueurs();
 		jeuCourant.initialiserPioche();
+		jeuCourant.setTropheeJeu();
+		
 		Tour tourCourant = new Tour(jeuCourant);
+		
+		
 		while(jeuCourant.pioche.estPiochable()) {
 			tourCourant.distribuerCartes();
 			tourCourant.gererOffres();

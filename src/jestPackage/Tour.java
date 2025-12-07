@@ -31,7 +31,9 @@ public class Tour {
 	}
 	
 	public void gererOffres() {
-		
+		for (Joueur joueur : this.jeu.getJoueurs()) {
+			joueur.deciderOffre();
+		}
 	}
 	
 	public void gererPrises() {

@@ -9,5 +9,18 @@ public class CarteCouleur extends Carte{
 		this.valeurBase = valeurBase;
 	}
 	
+	public Couleur getCouleur() {
+		return couleur;
+	}
+	
+	public int getValeurBase() {
+		return valeurBase;
+	}
+	
+	public String toString() {
+		return "CarteCouleur[nom=" + nom + ", couleur=" + couleur
+				+ ", valeurBase=" + valeurBase + "]";
+	}
+	
 
 }

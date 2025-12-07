@@ -47,6 +47,8 @@ public class Pioche {
 		this.cartes.add(new CarteCouleur("3 de pique", new TropheeIncolore(ConditionIncolore.PLUSDE2),Couleur.PIQUE, 3));
 		// 4 de pique
 		this.cartes.add(new CarteCouleur("4 de pique", new TropheeCouleur(OrdreTropheeCouleur.PLUSPETIT,Couleur.TREFLE),Couleur.PIQUE, 4));
+		
+		this.melangerCartes();
 	}	
 	
 	
