@@ -57,5 +57,13 @@ public class Pioche {
 	public boolean estPiochable() {
 		return this.cartes.size()>=(this.jeu.getJoueurs().size())*2;
 	}
-
+	
+	public Carte piocher() {
+		if (this.estPiochable()) {
+			return this.cartes.remove(0);
+		} else {
+			System.out.println("La pioche ne contient pas assez de cartes pour piocher.");
+			return null;
+		}
+	}
 }

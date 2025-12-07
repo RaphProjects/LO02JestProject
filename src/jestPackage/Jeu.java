@@ -16,6 +16,10 @@ public class Jeu {
         return this.joueurs;
     }
 	
+	public Pioche getPioche() {
+		return this.pioche;
+	}
+	
 	
 	public void initialiserJoueurs() {
 		Scanner scanner = new Scanner(System.in);
