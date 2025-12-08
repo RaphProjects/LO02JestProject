@@ -88,6 +88,7 @@ public class Jeu {
 		tourCourant.distribuerCartes();
 		tourCourant.gererOffres();
 		tourCourant.afficherOffres();
+		tourCourant.gererPrises();
 		
 		
 	}

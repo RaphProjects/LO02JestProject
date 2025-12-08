@@ -16,5 +16,8 @@ public abstract class Carte implements CarteElement {
 	public Trophee getBandeauTrophee() {
 		return bandeauTrophee;
 	}
-
+	
+	public abstract int getValeurBase();
+	public abstract Couleur getCouleur();
+	public abstract int getValeurCouleur();
 }

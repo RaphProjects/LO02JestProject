@@ -47,6 +47,37 @@ public class Tour {
 	}
 	
 	public void gererPrises() {
+		// Trouver le joueur avec la carte visible la plus élevée
+		ArrayList<Carte> cartesVisibles = new ArrayList<Carte>();
+		for (Joueur joueur : this.jeu.getJoueurs()) {
+			cartesVisibles.add(joueur.getOffre().getCarteVisible());
+		}
+		//int numjoueurAvecCartePlusHaute = cartesVisibles.indexOf(Collections.max(cartesVisibles, Comparator.comparingInt(Carte::getValeurBase)));
+		ArrayList<Integer> joueursAvecCartePlusHaute = new ArrayList<Integer>();
+		ArrayList<Integer> valeursCouleursPlusHautes = new ArrayList<Integer>();
+		for (int i = 0; i < cartesVisibles.size(); i++) {
+			if (cartesVisibles.get(i).getValeurBase() == Collections.max(cartesVisibles, Comparator.comparingInt(Carte::getValeurBase)).getValeurBase()) {
+				joueursAvecCartePlusHaute.add(i);
+				valeursCouleursPlusHautes.add(cartesVisibles.get(i).getValeurCouleur());
+			}
+		}
+		
+		// Gérer les égalités;
+		// récupérer l'indice de la plus haute valeur de couleur
+		int indicePlusHauteValeurCouleur = valeursCouleursPlusHautes.indexOf(Collections.max(valeursCouleursPlusHautes));
+		// retirer de la liste tous les éléments des indices de joueurs sauf celui avec l'indice de la meileure valeur de couleur
+		for (int i = 0; i < joueursAvecCartePlusHaute.size(); i++) {
+			if (i != indicePlusHauteValeurCouleur) {
+				joueursAvecCartePlusHaute.remove(i);
+			}
+		}
+		
+		
+		System.out.println("Le joueur " + this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.getFirst()).nom + " A la plus grande offre visible.");
+		
+		
+		
+		
 		
 	}
 	

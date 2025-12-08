@@ -22,5 +22,19 @@ public class CarteCouleur extends Carte{
 				+ ", valeurBase=" + valeurBase + "]";
 	}
 	
+	public int getValeurCouleur() {
+		switch (couleur) {
+		case PIQUE:
+			return 4;
+		case TREFLE:
+			return 3;
+		case CARREAU:
+			return 2;
+		case COEUR:
+			return 1;
+		default:
+			return 0;
+		}
+	}
 
 }
