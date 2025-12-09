@@ -73,12 +73,21 @@ public class Tour {
 		}
 		
 		// La ligne suivante est juste pour du debug
-		//System.out.println("Le joueur " + this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.getFirst()).nom + " A la plus grande offre visible.");
+		System.out.println("Le joueur " + this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.getFirst()).nom + " commence car il a la plus grande offre visible.");
 		
 		
 		// On commence par le joueur qui a la carte visible la plus élevée
-		Joueur premierAjouer = this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.get(0);
+		Joueur premierAjouer = this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.get(0));
 		premierAjouer.choisirPrise();
+		
+		//Afficher toutes les cartes qu'il peut prendre (toutes les cartes des offres sauf les siennes)
+		for (int i = 0; i < this.jeu.getJoueurs().size(); i++) {
+			if (this.jeu.getJoueurs().get(i) != premierAjouer) {
+				Offre offre = this.jeu.getJoueurs().get(i).getOffre();
+				System.out.println("Offre de " + this.jeu.getJoueurs().get(i).nom + " : Carte Visible - "
+						+ offre.getCarteVisible().toString() + ", Carte Cachée - " + offre.getCarteCachee().toString());
+			}
+		}
 		
 		// Puis on continue avec le joueur qui s'est fait prendre une carte
 		

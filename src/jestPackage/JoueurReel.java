@@ -57,6 +57,7 @@ public class JoueurReel extends Joueur {
 	
 	public Carte choisirPrise() {
 		Scanner scanner = new Scanner(System.in);
+		
 		return this.offre.getCarteVisible();
 		//temporaire
 

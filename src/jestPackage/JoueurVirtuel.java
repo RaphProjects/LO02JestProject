@@ -17,5 +17,10 @@ public class JoueurVirtuel extends Joueur {
 		//Offre offreChoisie = StrategieVirtuelle.choisirOffre(this.main);
 		//this.offre = offreChoisie;
 	}
+	
+	public Carte choisirPrise() {
+		// temporaire en attendant d'avoir des strategies pour l'ia
+		return this.offre.getCarteVisible();
+	}
 
 }
