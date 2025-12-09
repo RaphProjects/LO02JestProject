@@ -13,5 +13,6 @@ public abstract class Joueur {
 	
 	public abstract Offre getOffre();
 	public abstract void deciderOffre();
+	public abstract Carte choisirPrise();
 	
 }

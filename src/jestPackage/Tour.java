@@ -72,11 +72,15 @@ public class Tour {
 			}
 		}
 		
+		// La ligne suivante est juste pour du debug
+		//System.out.println("Le joueur " + this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.getFirst()).nom + " A la plus grande offre visible.");
 		
-		System.out.println("Le joueur " + this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.getFirst()).nom + " A la plus grande offre visible.");
 		
+		// On commence par le joueur qui a la carte visible la plus élevée
+		Joueur premierAjouer = this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.get(0);
+		premierAjouer.choisirPrise();
 		
-		
+		// Puis on continue avec le joueur qui s'est fait prendre une carte
 		
 		
 	}
