@@ -48,11 +48,11 @@ public class Jeu {
 			int joueurIsVirtuel = scanner.nextInt();
 			if (joueurIsVirtuel == 0) {
 				System.out.println("Creation du joueur reel \"Joueur " + compteurJoueur + "\".");
-				this.joueurs.add(new JoueurReel("Joueur " + compteurJoueur)) ;
+				this.joueurs.add(new JoueurReel("Joueur " + compteurJoueur, compteurJoueur)) ;
 				compteurJoueur++;
 			} else if (joueurIsVirtuel == 1) {
 				System.out.println("Creation du joueur virtuel \"Joueur " + compteurJoueur + "\".");
-				this.joueurs.add(new JoueurVirtuel("Joueur " + compteurJoueur)) ;
+				this.joueurs.add(new JoueurVirtuel("Joueur " + compteurJoueur, compteurJoueur)) ;
 				compteurJoueur++;
 			} else {
 				System.out.println("Valeur invalide. Veuillez entrer 0 pour reel ou 1 pour virtuel.");

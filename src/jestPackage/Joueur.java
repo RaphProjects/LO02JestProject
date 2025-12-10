@@ -6,6 +6,7 @@ public abstract class Joueur {
 	protected Jest jest = new Jest();
 	protected Offre offre = new Offre();
 	protected ArrayList<Carte> main = new ArrayList<Carte>();
+	protected int numJoueur;
 	
 	public void prendreCarte(Carte carte) {
 		this.main.add(carte);
@@ -31,4 +32,7 @@ public abstract class Joueur {
 		this.jest.ajouterCarte(carte);
 	}
 	
+	public int getNumJoueur() {
+		return this.numJoueur;
+	}
 }

@@ -1,8 +1,9 @@
 package jestPackage;
 
 public class JoueurVirtuel extends Joueur {
-	public JoueurVirtuel(String nom) {
+	public JoueurVirtuel(String nom, int numJoueur) {
 		this.nom = nom;
+		this.numJoueur = numJoueur;
 	}
 	
 	public boolean isVirtuel() {

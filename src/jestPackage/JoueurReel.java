@@ -3,8 +3,9 @@ import java.util.*;
 
 
 public class JoueurReel extends Joueur {
-	public JoueurReel(String nom) {
+	public JoueurReel(String nom, int numJoueur) {
 		this.nom = nom;
+		this.numJoueur = numJoueur;
 		
 	}
 	
