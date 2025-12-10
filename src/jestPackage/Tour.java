@@ -78,16 +78,30 @@ public class Tour {
 		
 		// On commence par le joueur qui a la carte visible la plus élevée
 		Joueur premierAjouer = this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.get(0));
-		premierAjouer.choisirPrise();
+		
 		
 		//Afficher toutes les cartes qu'il peut prendre (toutes les cartes des offres sauf les siennes)
+		int indiceJoueur = 0; // utilisé pour numéroter les options
+		ArrayList<Integer> joueurPourChoix = new ArrayList<>(); // Liste avec les choix en indice et le joueur correspondant en element
+		
 		for (int i = 0; i < this.jeu.getJoueurs().size(); i++) {
 			if (this.jeu.getJoueurs().get(i) != premierAjouer) {
+				
 				Offre offre = this.jeu.getJoueurs().get(i).getOffre();
-				System.out.println("Offre de " + this.jeu.getJoueurs().get(i).nom + " : Carte Visible - "
-						+ offre.getCarteVisible().toString() + ", Carte Cachée - " + offre.getCarteCachee().toString());
+				System.out.println("Offre de " + this.jeu.getJoueurs().get(i).nom + " :");
+				System.out.println(indiceJoueur*2+1 +" : Carte Visible - "
+						+ offre.getCarteVisible().toString());
+				joueurPourChoix.set(indiceJoueur*2+1,i);
+				System.out.println(indiceJoueur*2+2+" : Carte Cachée - Inconnue");
+				indiceJoueur+=1;
 			}
+			
 		}
+		int numCarteChosie = (premierAjouer.choisirPrise(indiceJoueur*2+2));
+		int numProchainJoueur = joueurPourChoix.get(numCarteChosie);
+		// top 10 des lignes illisibles : on récupère la carte choisie dans le jest du prochainjoueur et on l'ajoute au jest du premier joueur
+		premierAjouer.ajouterAsonJest(this.jeu.getJoueurs().get(numProchainJoueur).donnerCarte((numCarteChosie % 2 == 0) ? true : false ));
+		
 		
 		// Puis on continue avec le joueur qui s'est fait prendre une carte
 		

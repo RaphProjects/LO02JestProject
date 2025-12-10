@@ -55,10 +55,18 @@ public class JoueurReel extends Joueur {
 		}
 	}
 	
-	public Carte choisirPrise() {
+	public int choisirPrise(int nbpossibilite) {
 		Scanner scanner = new Scanner(System.in);
+		System.out.println("Joueur " + this.nom + ", veuillez entrer le numéro de la carte que vous souhaitez prendre : ");
+		int numchoix = scanner.nextInt();
+		while (numchoix < 1 || numchoix > nbpossibilite) {
+			if (numchoix < 1 || numchoix > nbpossibilite) {
+				System.out.println("Choix invalide. Veuillez entrer un numéro valide : ");
+			}
+			numchoix = scanner.nextInt();
+		}
 		
-		return this.offre.getCarteVisible();
+		return numchoix;
 		//temporaire
 
 	}

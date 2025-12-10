@@ -18,9 +18,9 @@ public class JoueurVirtuel extends Joueur {
 		//this.offre = offreChoisie;
 	}
 	
-	public Carte choisirPrise() {
+	public int choisirPrise(int nbpossibilite) {
 		// temporaire en attendant d'avoir des strategies pour l'ia
-		return this.offre.getCarteVisible();
+		return 0;
 	}
 
 }

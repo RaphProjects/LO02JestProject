@@ -90,7 +90,6 @@ public class Jeu {
 		tourCourant.afficherOffres();
 		tourCourant.gererPrises();
 		
-		
 	}
 	
 	
