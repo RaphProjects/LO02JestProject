@@ -76,6 +76,7 @@ public class Tour {
 		System.out.println("Le joueur " + this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.getFirst()).nom + " commence car il a la plus grande offre visible.");
 		
 		
+		int numjoueursayantjoue = 0;
 		// On commence par le joueur qui a la carte visible la plus élevée
 		Joueur premierAjouer = this.jeu.getJoueurs().get(joueursAvecCartePlusHaute.get(0));
 		
@@ -97,13 +98,38 @@ public class Tour {
 			}
 			
 		}
-		int numCarteChosie = (premierAjouer.choisirPrise(indiceJoueur*2+2));
-		int numProchainJoueur = joueurPourChoix.get(numCarteChosie);
-		// top 10 des lignes illisibles : on récupère la carte choisie dans le jest du prochainjoueur et on l'ajoute au jest du premier joueur
-		premierAjouer.ajouterAsonJest(this.jeu.getJoueurs().get(numProchainJoueur).donnerCarte((numCarteChosie % 2 == 0) ? true : false ));
-		
-		
-		// Puis on continue avec le joueur qui s'est fait prendre une carte
+		int numCarteChoisie = (premierAjouer.choisirPrise(indiceJoueur*2+2));
+		int numProchainJoueur = joueurPourChoix.get(numCarteChoisie);
+		// on récupère la carte choisie dans le jest du prochainjoueur et on l'ajoute au jest du premier joueur
+		premierAjouer.ajouterAsonJest(this.jeu.getJoueurs().get(numProchainJoueur).donnerCarte((numCarteChoisie % 2 == 0) ? true : false ));
+		numjoueursayantjoue+=1;
+
+		// Puis on continue avec le joueur qui s'est fait prendre une carte jusqu'à ce que tous les joueurs aient joué
+		while (numjoueursayantjoue < this.jeu.getJoueurs().size()) {
+			Joueur joueurcourant= this.jeu.getJoueurs().get(numProchainJoueur);
+			System.out.println("C'est au tour de " + this.jeu.getJoueurs().get(numProchainJoueur).nom + " de jouer.");
+			// Afficher toutes les cartes qu'il peut prendre (toutes les cartes des offres completes
+			// sauf les siennes)
+			indiceJoueur = 0; // utilisé pour numéroter les options
+			joueurPourChoix.clear(); // Liste avec les choix en indice et le joueur correspondant en element
+			// Identifier les joueurs avec des offres complètes
+			ArrayList<Boolean> joueursOffreEstComplete = new ArrayList<>();
+			for (int i = 0; i < this.jeu.getJoueurs().size(); i++) {
+				joueursOffreEstComplete.add(this.jeu.getJoueurs().get(i).getOffre().estComplete());
+			}
+			// identifier s'il ne reste que l'offre du joueur courant qui est complete
+			if (Collections.frequency(joueursOffreEstComplete, true) <= 1) {
+				// plus qu'un seul joueur avec une offre complète, le joueur courant doit choisir une carte de sa propre offre
+				System.out.println("Toutes les autres offres sont vides. Vous devez choisir une carte de votre propre offre.");
+				Offre offre = joueurcourant.getOffre();
+				System.out.println("1 : Carte Visible - "
+						+ offre.getCarteVisible().toString());
+				System.out.println("2 : Carte Cachée - Inconnue");
+				numCarteChoisie = (joueurcourant.choisirPrise(2));
+				joueurcourant.ajouterAsonJest(joueurcourant.donnerCarte(numCarteChoisie == 1));// Donne la carte visible si numCarteChoisie = 1 sinon la carte cachée
+				break;
+			}
+		}
 		
 		
 	}

@@ -24,5 +24,9 @@ public class Offre {
 	public void setCarteCachee(Carte carteCachee) {
 		this.carteCachee = carteCachee;
 	}
+	
+	public boolean estComplete() {
+		return this.carteVisible != null && this.carteCachee != null;
+	}
 
 }
