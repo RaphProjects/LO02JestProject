@@ -28,5 +28,20 @@ public class Offre {
 	public boolean estComplete() {
 		return this.carteVisible != null && this.carteCachee != null;
 	}
+	
+	public Carte getCarteRestante() {
+		Carte carteRestante;
+		if (this.carteVisible != null && this.carteCachee == null) {
+			carteRestante = this.carteVisible;
+			this.carteVisible = null;
+			return carteRestante;
+		} else if (this.carteCachee != null && this.carteVisible == null) {
+			carteRestante = this.carteCachee;
+			this.carteCachee = null;
+			return carteRestante;
+		} else {
+			return null;
+		}
+	}
 
 }

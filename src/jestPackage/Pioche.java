@@ -57,15 +57,15 @@ public class Pioche {
 	}
 	
 	public boolean estPiochable() {
-		return this.cartes.size()>=(this.jeu.getJoueurs().size())*2;
+		return this.cartes.size()>=(this.jeu.getJoueurs().size()); // A chaque tour on recupere une carte par joueur (cartes non jouéees au tour precedent)
+		// Il faut donc contenir au moins une carte par joueur pour que chaque joueur ait deux cartes au total apres distribution
 	}
 	
 	public Carte piocher() {
-		if (this.estPiochable()) {
-			return this.cartes.remove(0);
-		} else {
-			System.out.println("La pioche ne contient pas assez de cartes pour piocher.");
+		if (this.cartes.isEmpty()) {
+			System.out.println("La pioche est vide.");
 			return null;
 		}
+		return this.cartes.remove(0);
 	}
 }

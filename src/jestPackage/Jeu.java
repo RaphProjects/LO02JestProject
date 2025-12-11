@@ -74,21 +74,23 @@ public class Jeu {
 		
 		Tour tourCourant = new Tour(jeuCourant);
 		
-		/* 
+	
 		// Boucle de jeu principale, desactivée pour l'instant pour tester le reste
 		while(jeuCourant.pioche.estPiochable()) {
+			tourCourant.afficherNumeroTour();
 			tourCourant.distribuerCartes();
 			tourCourant.gererOffres();
 			tourCourant.gererPrises();
 			tourCourant.passerAuTourSuivant();
 		}
-		*/
+		System.out.println("La pioche est vide. Fin du jeu.");
+		/*
 		
 		// Main de test temporaire pour tester les offres
 		tourCourant.distribuerCartes();
 		tourCourant.gererOffres();
-		tourCourant.afficherOffres();
-		tourCourant.gererPrises();
+		tourCourant.afficherOffres(); // A supprimer plus tard pour ne pas afficher les cartes cachées
+		tourCourant.gererPrises();*/
 		
 	}
 	
