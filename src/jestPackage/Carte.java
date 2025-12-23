@@ -1,6 +1,7 @@
 package jestPackage;
-
-public abstract class Carte implements CarteElement {
+import java.io.Serializable;
+public abstract class Carte implements CarteElement, Serializable {
+	private static final long serialVersionUID = 1L;
 	protected String nom;
 	protected Trophee bandeauTrophee;
 	
@@ -20,4 +21,7 @@ public abstract class Carte implements CarteElement {
 	public abstract int getValeurBase();
 	public abstract Couleur getCouleur();
 	public abstract int getValeurCouleur();
+	public abstract boolean estCouleur(); 
+	
+	
 }

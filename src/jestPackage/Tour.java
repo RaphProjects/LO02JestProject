@@ -1,8 +1,9 @@
 package jestPackage;
 import java.util.*;
+import java.io.Serializable;
 
-
-public class Tour {
+public class Tour implements Serializable{
+	private static final long serialVersionUID = 1L;
 	private int numeroTour=1;
 	private Jeu jeu;
 	private ArrayList<Carte> cartesNonJouees = new ArrayList<Carte>();
@@ -15,6 +16,14 @@ public class Tour {
 	
 	public void afficherNumeroTour() {
 		System.out.println("----- Tour " + this.numeroTour + " -----");
+	}
+	
+	public int getNumeroTour() {
+		return this.numeroTour;
+	}
+	
+	public void setNumeroTour(int numeroTour) {
+		this.numeroTour = numeroTour;
 	}
 
 	public void passerAuTourSuivant() {
@@ -52,6 +61,7 @@ public class Tour {
 		// Trouver le joueur n'ayant pas deja joué avec la carte visible la plus élevée
 		// Isoler le cas où tout le monde a déjà joué
 		if (this.joueursAyantJoueCeTour.size() == this.jeu.getJoueurs().size()) {
+			System.out.println("Erreur : tous les joueurs ont déjà joué ce tour.");
 			return -1;
 		}
 			ArrayList<Carte> cartesVisibles = new ArrayList<Carte>();
@@ -112,6 +122,12 @@ public class Tour {
 	    
 	    // Boucle jusqu'à ce que tous les joueurs aient joué ce tour
 	    while (this.joueursAyantJoueCeTour.size() < this.jeu.getJoueurs().size()) {
+	    	// DEBUG AFFICHER LES MAINS DE TOUS LES JOUEURS
+	    	for (Joueur j : this.jeu.getJoueurs()) {
+	    		System.out.println("Main de " + j.nom + " : " + j.getMain().toString());
+	    	}
+	    	
+	    	
 	        Joueur joueurCourant = this.jeu.getJoueurs().get(indiceJoueurCourant);
 	        System.out.println("C'est au tour de " + joueurCourant.nom + " de jouer.");
 	        
@@ -133,11 +149,25 @@ public class Tour {
 	            System.out.println("Toutes les autres offres sont vides. Choisissez dans votre offre.");
 	            System.out.println("1 : Carte Visible - " + joueurCourant.getOffre().getCarteVisible());
 	            System.out.println("2 : Carte Cachée - Inconnue");
-	            int choix = joueurCourant.choisirPrise(2);
-	            joueurCourant.ajouterAsonJest(joueurCourant.donnerCarte(choix == 1));
+	            
+	            int choix = -1;
+				if (joueurCourant.isVirtuel()) {// On utilise des méthodes différentes entre joueur réel et virtuel pour le moment
+					choix = ((JoueurVirtuel)joueurCourant).choisirPriseDeSoi(joueurCourant.getJest(), joueurCourant.getOffre());
+					System.out.println("Le joueur Virtuel" + joueurCourant.nom + " a choisi la carte " + choix);
+				}
+				else {
+					choix = joueurCourant.choisirPrise(2);
+				}
+				joueurCourant.ajouterAsonJest(joueurCourant.donnerCarte(choix == 1));
 	            this.joueursAyantJoueCeTour.add(joueurCourant.getNumJoueur());
-	            break;
+	            
+	            break; // On a plus besoin de continuer la boucle principale car le tour est terminé. Un else aurait aussi pu faire l'affaire.
 	        }
+	        
+	        // On créé un arraylist des offres pour les joueurs virtuels
+	        ArrayList<Offre> offresAdverse = new ArrayList<>();
+	        // vider offres adverse au cas où
+	        offresAdverse.clear();
 	        
 	        // Afficher les offres disponibles des autres joueurs
 	        for (int i = 0; i < this.jeu.getJoueurs().size(); i++) {
@@ -146,6 +176,9 @@ public class Tour {
 	                Offre offre = j.getOffre();
 	                int idxVisible = indiceJoueur * 2 + 1;
 	                int idxCache = indiceJoueur * 2 + 2;
+	                
+	                
+	                offresAdverse.add(offre);
 	                
 	                System.out.println("Offre de " + j.nom + " :");
 	                System.out.println(idxVisible + " : Carte Visible - " + offre.getCarteVisible());
@@ -157,8 +190,17 @@ public class Tour {
 	            }
 	        }
 	        
-	        int numCarteChoisie = joueurCourant.choisirPrise(indiceJoueur * 2 + 2);
-	        System.out.println("Le joueur " + joueurCourant.nom + " a choisi la carte " + numCarteChoisie);
+	        int numCarteChoisie = -1;
+	        // Traiter le cas des joueurs virtuels
+	        if (joueurCourant.isVirtuel()) {// On utilise des méthodes différentes entre joueur réel et virtuel pour le moment
+	        	numCarteChoisie = ((JoueurVirtuel)joueurCourant).choisirPriseAdverse(joueurCourant.getJest(), offresAdverse);
+				System.out.println("Le joueur Virtuel" + joueurCourant.nom + " a choisi la carte " + numCarteChoisie);
+			}
+	        else{
+	        	numCarteChoisie = joueurCourant.choisirPrise(indiceJoueur * 2 + 2);
+	        	System.out.println("Le joueur " + joueurCourant.nom + " a choisi la carte " + numCarteChoisie);
+	        }
+	        
 	        
 	        int prochainIndice = joueurPourChoix.get(numCarteChoisie);
 	        // JoueurVole correspond au joueur qui s'est fait prendre une carte de son offre

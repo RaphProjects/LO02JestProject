@@ -1,8 +1,9 @@
 package jestPackage;
 import java.util.*;
+import java.io.Serializable;
 
-
-public class JoueurReel extends Joueur {
+public class JoueurReel extends Joueur implements Serializable{
+	private static final long serialVersionUID = 1L;
 	public JoueurReel(String nom, int numJoueur) {
 		this.nom = nom;
 		this.numJoueur = numJoueur;

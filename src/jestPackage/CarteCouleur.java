@@ -1,6 +1,7 @@
 package jestPackage;
-
-public class CarteCouleur extends Carte{
+import java.io.Serializable;
+public class CarteCouleur extends Carte implements Serializable{
+	private static final long serialVersionUID = 1L;
 	private Couleur couleur;
 	private int valeurBase;
 	public CarteCouleur(String nom, Trophee bandeauTrophee, Couleur couleur, int valeurBase) {
@@ -35,6 +36,13 @@ public class CarteCouleur extends Carte{
 		default:
 			return 0;
 		}
+	}
+
+	public boolean estCouleur() {
+		return true;
+	}
+	public int accept(VisiteurDeCarte visiteur) {
+		return visiteur.visit(this);
 	}
 
 }

@@ -1,7 +1,8 @@
 package jestPackage;
 import java.util.*;
-
-public abstract class Joueur {
+import java.io.Serializable;
+public abstract class Joueur implements Serializable{
+	private static final long serialVersionUID = 1L;
 	protected String nom;
 	protected Jest jest = new Jest();
 	protected Offre offre = new Offre();
@@ -15,6 +16,11 @@ public abstract class Joueur {
 	public abstract Offre getOffre();
 	public abstract void deciderOffre();
 	public abstract int choisirPrise(int nbpossibilite);
+	public abstract boolean isVirtuel();
+	
+	public Jest getJest() {
+		return this.jest;
+	}
 	
 	public Carte donnerCarte(boolean estVisible) {
 		Carte carteDonnee;
@@ -35,4 +41,15 @@ public abstract class Joueur {
 	public int getNumJoueur() {
 		return this.numJoueur;
 	}
+	
+	public String getNom() {
+		return this.nom;
+	}
+	
+	public ArrayList<Carte> getMain() {
+		return this.main;
+	}
+
+	
+
 }

@@ -1,6 +1,7 @@
 package jestPackage;
-
-public class Offre {
+import java.io.Serializable;
+public class Offre implements Serializable{
+	private static final long serialVersionUID = 1L;
 	private Carte carteVisible;
 	private Carte carteCachee;
 	
@@ -9,6 +10,12 @@ public class Offre {
 		this.carteCachee = null;
 	}
 	
+	public Offre(Carte carteVisible, Carte carteCachee) {
+		this.carteVisible = carteVisible;
+		this.carteCachee = carteCachee;
+		
+	}
+
 	public Carte getCarteVisible() {
 		return carteVisible;
 	}
@@ -42,6 +49,13 @@ public class Offre {
 		} else {
 			return null;
 		}
+	}
+
+	public String toString() { //pour debug
+		String str = "Offre : \n";
+		str += " - Carte Visible : " + (carteVisible != null ? carteVisible.getNom() : "Aucune") + "\n";
+		str += " - Carte Cachée : " + (carteCachee != null ? carteCachee.getNom() : "Aucune") + "\n";
+		return str;
 	}
 
 }

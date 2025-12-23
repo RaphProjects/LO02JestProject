@@ -1,5 +1,7 @@
 package TestP;
 
 public class TestC {
-	//Ceci est un commentair
+	public static void main(String[] args) {
+		System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+	}
 }
