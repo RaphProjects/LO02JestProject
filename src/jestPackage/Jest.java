@@ -88,9 +88,9 @@ public class Jest implements Serializable {
 				plusPetiteV = carte.getValeurBase();
 			}
 		}
-		// Si aucune carte de la couleur n'a été trouvée, on retourne 0
+		// Si aucune carte de la couleur n'a été trouvée, on retourne 100
 		if (plusPetiteV == 6) {
-			return 0;
+			return 100;
 		}
 		return plusPetiteV;
 

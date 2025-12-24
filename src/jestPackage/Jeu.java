@@ -37,6 +37,11 @@ public class Jeu implements Serializable{
 		}        
 		return instance;
 	}
+	
+	// Méthode pour réinitialiser le singleton (utile pour "Nouvelle Partie")
+	private static void resetInstance() {
+		instance = new Jeu();
+	}
 
 	public ArrayList<Joueur> getJoueurs() {
 		return this.joueurs;
@@ -240,8 +245,14 @@ public class Jeu implements Serializable{
 						plusPetiteValeurPourJoueur.add(joueur.getJest().plusPetiteValeurDeLaCouleur(
 								((TropheeCouleur) carteTrophee.getBandeauTrophee()).getCouleurDeCondition()));
 					}
-					// On cherche le minimum de cette liste
-					int MinValeur = Collections.min(plusPetiteValeurPourJoueur);
+					// On cherche le minimum de cette liste en excluant les 0
+					int MinValeur = plusPetiteValeurPourJoueur.getFirst();
+					for(int valeur : plusPetiteValeurPourJoueur) {
+						if(valeur>0 && valeur<MinValeur) {
+							MinValeur = valeur;
+						}
+					}
+					//int MinValeur = Collections.min(plusPetiteValeurPourJoueur);
 					// On cherche les joueurs qui ont ce minimum
 					ArrayList<Integer> joueursGagnantsTrophee = new ArrayList<Integer>();
 					for (int i = 0; i < plusPetiteValeurPourJoueur.size(); i++) {
@@ -332,26 +343,29 @@ public class Jeu implements Serializable{
 				}// Accolade de la fermeture du cas majorité
 					// cas 2 : JOKER
 				else if (((TropheeIncolore) carteTrophee.getBandeauTrophee()).getCondition() == ConditionIncolore.JOKER) {
-					// Le joueur possédant le joker remporte le trophée
-					// variable pour verifier si aucun joueur n'a le joker :
-					boolean jokerTrouve = false;
-					
-					for (Joueur joueur : this.joueurs) {
-						for (Carte carte : joueur.getJest().getCartes()) {
-							if (carte.getNom().equals("Joker")) {
-								this.joueurPourTrophee.add(joueur.getNumJoueur());
-								//joueur.ajouterAsonJest(carteTrophee); Legacy
-								System.out.println("Le trophée " + carteTrophee.getNom() + " est remporté par Joueur "
-										+ joueur.getNumJoueur() + " !");
-								break;
-							}
-						}
-					}
-					if (!jokerTrouve) {
-						// On ajoute un -1 pour indiquer qu'aucun joueur n'a remporté ce trophée
-						this.joueurPourTrophee.add(-1);
-					}
-				}
+		            boolean jokerTrouve = false;
+		            
+		            for (Joueur joueur : this.joueurs) {
+		                for (Carte carte : joueur.getJest().getCartes()) {
+		                    if (carte.getNom().equals("Joker")) {
+		                        this.joueurPourTrophee.add(joueur.getNumJoueur());
+		                        System.out.println("Le trophée " + carteTrophee.getNom() + " est remporté par Joueur "
+		                                + joueur.getNumJoueur() + " !");
+		                        
+		                        jokerTrouve = true; // On note qu'on a trouvé le joker
+		                        break; // On sort de la boucle des cartes
+		                    }
+		                }
+		                if (jokerTrouve) {
+		                    break; //  On sort de la boucle des joueurs car le trophée est attribué
+		                }
+		            }
+		            
+		            if (!jokerTrouve) {
+		                // On ajoute un -1 SEULEMENT si personne n'a le joker
+		                this.joueurPourTrophee.add(-1);
+		            }
+		        }
 				
 				// cas 3 : PLUSGRANDJEST
 				else if (((TropheeIncolore) carteTrophee.getBandeauTrophee())
@@ -570,7 +584,7 @@ public class Jeu implements Serializable{
     }
     
     
-    public class GestionnairePartie {
+    public static class GestionnairePartie {
         private static Scanner scanner = new Scanner(System.in);
 
          //Affiche le menu principal et retourne le choix
@@ -673,31 +687,98 @@ public class Jeu implements Serializable{
         }
     }
 
+    // Méthode helper pour exécuter la boucle de jeu principale
+    private static void lancerBoucleJeu(Jeu jeuCourant) {
+        CalculateurDeScore calculateur = new CalculateurDeScore(jeuCourant);
+        boolean continuerPartie = true;
+
+        while (continuerPartie && jeuCourant.pioche.estPiochable()) {
+            
+            // On propose de mettre en pause avant chaque tour
+            System.out.println("\n--- Début du Tour " + jeuCourant.tour.getNumeroTour() + " ---");
+            System.out.println("Appuyez sur 'P' et Entrée pour le menu pause, ou simplement Entrée pour jouer le tour...");
+            Scanner scanPause = new Scanner(System.in);
+            String input = scanPause.nextLine();
+
+            if (input.equalsIgnoreCase("P")) {
+                int choixPause = GestionnairePartie.afficherMenuPause();
+                
+                switch (choixPause) {
+                    case 1: // Continuer
+                        break;
+                    case 2: // Sauvegarder
+                        GestionnairePartie.interfaceSauvegarde(jeuCourant);
+                        break;
+                    case 3: // Sauvegarder et quitter
+                        GestionnairePartie.interfaceSauvegarde(jeuCourant);
+                        continuerPartie = false;
+                        break;
+                    case 4: // Quitter sans sauvegarder
+                        continuerPartie = false;
+                        break;
+                }
+            }
+
+            // Si on ne quitte pas, on joue le tour
+            if (continuerPartie) {
+                jeuCourant.tour.afficherNumeroTour();
+                jeuCourant.tour.distribuerCartes();
+                jeuCourant.tour.gererOffres();
+                jeuCourant.tour.gererPrises();
+                jeuCourant.tour.passerAuTourSuivant();
+            }
+        }
+
+        // Si la boucle s'arrête parce que la pioche est vide
+        if (continuerPartie && !jeuCourant.pioche.estPiochable()) {
+            System.out.println("La pioche est vide. Fin du jeu.");
+            jeuCourant.determinerGagnants(calculateur);
+        }
+    }
+
     
     public static void main(String[] args) {
-    	Jeu jeuCourant = Jeu.getInstance();
-    	CalculateurDeScore calculateur = new CalculateurDeScore(jeuCourant);
-    	jeuCourant.initialiserExtension();
-    	jeuCourant.initialiserVariante();
-    	jeuCourant.initialiserJoueurs();
-    	jeuCourant.initialiserPioche();
-    	jeuCourant.setTropheeJeu();
+        boolean quitterApplication = false;
 
-    	Tour tourCourant = new Tour(jeuCourant);
+        while (!quitterApplication) {
+            int choixPrincipal = GestionnairePartie.afficherMenuPrincipal();
 
-    	// Boucle de jeu principale, desactivée pour l'instant pour tester le reste
-    	while (jeuCourant.pioche.estPiochable()) {
-    		tourCourant.afficherNumeroTour();
-    		tourCourant.distribuerCartes();
-    		tourCourant.gererOffres();
-    		tourCourant.gererPrises();
-    		tourCourant.passerAuTourSuivant();
-    	}
-    	System.out.println("La pioche est vide. Fin du jeu.");
-        jeuCourant.determinerGagnants(calculateur);
-        jeuCourant.sauvegarderPartie("PartieSave");
-        jeuCourant.chargerPartie("PartieSave");
+            switch (choixPrincipal) {
+                case 1: // Nouvelle partie
+                	Jeu.resetInstance(); // Réinitialiser pour une nouvelle partie
+                    Jeu jeuCourant = Jeu.getInstance();
+                    jeuCourant.initialiserExtension();
+                    jeuCourant.initialiserVariante();
+                    jeuCourant.initialiserJoueurs();
+                    jeuCourant.initialiserPioche();
+                    jeuCourant.setTropheeJeu();
+                    // Initialiser le tour et le lier au jeu
+                    jeuCourant.tour = new Tour(jeuCourant);
+                    
+                    lancerBoucleJeu(jeuCourant);
+                    break;
 
+                case 2: // Charger une partie
+                    Jeu jeuCharge = GestionnairePartie.interfaceChargement();
+                    if (jeuCharge != null) {
+                        lancerBoucleJeu(jeuCharge);
+                    }
+                    break;
+
+                case 3: // Supprimer une sauvegarde
+                    GestionnairePartie.interfaceSuppression();
+                    break;
+
+                case 4: // Quitter
+                    System.out.println("Au revoir !");
+                    quitterApplication = true;
+                    break;
+
+                default:
+                    System.out.println("Choix invalide.");
+                    break;
+            }
+        }
     }
 
 }
