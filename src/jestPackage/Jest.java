@@ -145,4 +145,41 @@ public class Jest implements Serializable {
 		}
 		return valeurCouleur;
 	}
+	
+	public int valeurTotaleCoeurs() {
+		// On vérifie si le joker est présent
+		int nombreDeCoeurs = 0;
+		int valeurTotale = 0;
+		boolean jokerPresent = false;
+		for(Carte carteCourante : cartes) {
+			if(carteCourante.getNom()=="Joker") {
+				
+				jokerPresent = true;
+			}
+			else if(carteCourante.getCouleur()==Couleur.COEUR) {
+				nombreDeCoeurs +=1;
+			}
+		}
+		if(!jokerPresent) {
+			// Pas de joker, on retourne forcement 0
+			return 0;
+		}
+		for(Carte carteCourante : cartes) {
+			if(nombreDeCoeurs<4 && carteCourante.estCouleur()) {
+				if(carteCourante.getCouleur()==Couleur.COEUR) {
+					valeurTotale-=carteCourante.getValeurBase();
+				}
+				
+			}
+			else if(carteCourante.estCouleur()) {
+				if(carteCourante.getCouleur()==Couleur.COEUR) {
+					valeurTotale+=carteCourante.getValeurBase();
+				}
+				
+			}
+		}
+		
+		return valeurTotale;
+		
+	}
 }

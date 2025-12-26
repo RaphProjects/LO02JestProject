@@ -18,9 +18,9 @@ public abstract class Carte implements CarteElement, Serializable {
 		return bandeauTrophee;
 	}
 	
-	public abstract int getValeurBase();
+	public abstract int getValeurBase();// correspond à la face value de l'énoncé
 	public abstract Couleur getCouleur();
-	public abstract int getValeurCouleur();
+	public abstract int getValeurCouleur(); // utilisé pour gérer les égalités
 	public abstract boolean estCouleur(); 
 	
 	

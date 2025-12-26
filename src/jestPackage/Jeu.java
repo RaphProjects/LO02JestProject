@@ -197,7 +197,7 @@ public class Jeu implements Serializable{
 		ArrayList<Integer> scoresAvantTrophees = new ArrayList<Integer>(); // l'élément i correspond au score du joueur
 																			// i+1 (élement i de la liste joueurs)
 		for (Joueur joueur : this.joueurs) {
-			scoresAvantTrophees.add(calculateur.getScore(joueur.getJest().getCartes()));
+			scoresAvantTrophees.add(calculateur.getScore(joueur.getJest()));
 		}
 		
 		
@@ -424,7 +424,7 @@ public class Jeu implements Serializable{
 		// Il faut maitenant calculer les scores finaux et déterminer l'ordre des gagnants
 		ArrayList<Integer> scoresFinaux = new ArrayList<Integer>();
 		for (Joueur joueur : this.joueurs) {
-			scoresFinaux.add(calculateur.getScore(joueur.getJest().getCartes()));
+			scoresFinaux.add(calculateur.getScore(joueur.getJest()));
 		}
 		
 		
@@ -445,7 +445,7 @@ public class Jeu implements Serializable{
 			for (int i = 0; i < ordreGagnants.size(); i++) {
 				int indiceJoueur = ordreGagnants.get(i);
 				Joueur joueurGagnant = this.joueurs.get(indiceJoueur);
-				int scoreFinal = calculateur.getScore(joueurGagnant.getJest().getCartes());
+				int scoreFinal = calculateur.getScore(joueurGagnant.getJest());
 				System.out
 						.println((i + 1) + " : Joueur " + joueurGagnant.getNumJoueur() + " avec un score de " + scoreFinal);
 			}
@@ -459,7 +459,7 @@ public class Jeu implements Serializable{
 			    int indiceJoueur = ordreGagnants.get(indexInversé);
 			    
 			    Joueur joueurGagnant = this.joueurs.get(indiceJoueur);
-			    int scoreFinal = calculateur.getScore(joueurGagnant.getJest().getCartes());
+			    int scoreFinal = calculateur.getScore(joueurGagnant.getJest());
 			    
 			    // (i + 1) reste le rang d'affichage (1er, 2ème, etc.)
 			    System.out.println((i + 1) + " : Joueur " + joueurGagnant.getNumJoueur() + " avec un score de " + scoreFinal);
