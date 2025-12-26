@@ -102,8 +102,23 @@ public class CalculateurDeScore implements VisiteurDeCarte, Serializable{
 					System.out.println("Score += " + valeurbasecourante);
 					score += valeurbasecourante;
 				}
+				// gestion des pairs
 				
-	           }
+				for(Carte carteCourante:cartes) {
+					if(carte.getCouleur()==Couleur.PIQUE) {
+						if(carteCourante.getCouleur()==Couleur.TREFLE && carteCourante.getValeurBase()==carte.getValeurBase()) {
+							score+=1; // On ajoute 1 pour chacune des cartes de la paire = 2 en tout
+						}
+					}
+					else {
+						if(carteCourante.getCouleur()==Couleur.PIQUE && carteCourante.getValeurBase()==carte.getValeurBase()) {
+							score+=1; // On ajoute 1 pour chacune des cartes de la paire = 2 en tout
+						}
+						
+					}
+				}
+				
+	        }
 		}
 		System.out.println(" ");
 		return score;
