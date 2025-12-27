@@ -430,11 +430,11 @@ public class VueConsole implements IVue {
 	}
 
 	public void afficherJoueurNonDisponible() {
-	    System.out.println("❌ Ce joueur n'est pas disponible. Réessayez.");
+	    System.out.println(" Ce joueur n'est pas disponible. Réessayez.");
 	}
 
 	public void afficherDemandeTypeCarte(int numeroJoueurCible, String carteVisibleNom, boolean carteCacheeDisponible) {
-	    System.out.println("\n🃏 Chez le joueur " + numeroJoueurCible + ", quelle carte voulez-vous prendre ?");
+	    System.out.println("\n Chez le joueur " + numeroJoueurCible + ", quelle carte voulez-vous prendre ?");
 	    if (carteVisibleNom != null) {
 	        System.out.println("  1. Carte visible : " + carteVisibleNom);
 	    }
@@ -448,7 +448,6 @@ public class VueConsole implements IVue {
 	    System.out.print(message + " (O/N) : ");
 	}
 	
-	// Ajoutez ces méthodes à VueConsole
 
 	public void nettoyerConsole() {
 	    for (int i = 0; i < 50; i++) {
