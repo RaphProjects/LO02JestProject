@@ -1,24 +1,18 @@
 package jestPackage.Modele;
 
 import java.util.*;
-
 import jestPackage.Vue.*;
 import jestPackage.Controleur.*;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 
 public class Jeu implements Serializable {
     private static final long serialVersionUID = 1L;
+    
     private ArrayList<Joueur> joueurs = new ArrayList<Joueur>();
     private ArrayList<Carte> trophees = new ArrayList<Carte>();
     private ArrayList<Integer> joueurPourTrophee = new ArrayList<Integer>();
+    
+    // Transient car non sérialisables
     public static transient VueConsole vue;
     public static transient IControleur controleur;
 
@@ -35,7 +29,7 @@ public class Jeu implements Serializable {
 
     private Jeu() {
         this.pioche = new Pioche(this);
-        this.vue = new VueConsole();
+        reinitialiserVueEtControleur();
     }
 
     public static Jeu getInstance() {
@@ -49,6 +43,20 @@ public class Jeu implements Serializable {
         instance = new Jeu();
     }
 
+    /**
+     * Réinitialise la vue et le contrôleur (après chargement ou création)
+     */
+    public void reinitialiserVueEtControleur() {
+        if (vue == null) {
+            vue = new VueConsole();
+        }
+        if (controleur == null) {
+            controleur = new ControleurConsole(vue);
+        }
+    }
+
+    // ==================== GETTERS ====================
+    
     public ArrayList<Joueur> getJoueurs() {
         return this.joueurs;
     }
@@ -62,19 +70,40 @@ public class Jeu implements Serializable {
     }
 
     public VueConsole getVue() {
-        return this.vue;
+        return vue;
     }
 
+    public IControleur getControleur() {
+        return controleur;
+    }
+
+    public ArrayList<Carte> getTrophees() {
+        return this.trophees;
+    }
+
+    public int getNumeroTourActuel() {
+        return tour.getNumeroTour();
+    }
+
+    public int getNumTour() {
+        return this.tour.getNumeroTour();
+    }
+
+    // ==================== SETTERS ====================
+    
     public void setVue(VueConsole vue) {
-        this.vue = vue;
+        Jeu.vue = vue;
     }
 
-    // Méthode pour réinitialiser la vue après chargement
-    public void reinitialiserVue() {
-        if (this.vue == null) {
-            this.vue = new VueConsole();
-        }
+    public void setControleur(IControleur controleur) {
+        Jeu.controleur = controleur;
     }
+
+    public void setNumeroTourActuel(int numero) {
+        this.tour.setNumeroTour(numero);
+    }
+
+    // ==================== INITIALISATION ====================
 
     public void setTropheeJeu() {
         if (this.joueurs.size() == 3) {
@@ -90,37 +119,21 @@ public class Jeu implements Serializable {
         }
     }
 
-    public ArrayList<Carte> getTrophees() {
-        return this.trophees;
-    }
-
     public void initialiserJoueurs() {
-        Scanner scanner = new Scanner(System.in);
         vue.afficherBienvenue();
-        int nombreJoueurs = 0;
-        while (nombreJoueurs < 3 || nombreJoueurs > 4) {
-            vue.demanderNombreJoueurs();
-            nombreJoueurs = scanner.nextInt();
-            if (nombreJoueurs < 3 || nombreJoueurs > 4) {
-                vue.afficherNombreJoueursInvalide();
-            }
-        }
-        int compteurJoueur = 1;
-        while (compteurJoueur <= nombreJoueurs) {
-            vue.demanderTypeJoueur(compteurJoueur);
-            int joueurIsVirtuel = scanner.nextInt();
+        
+        int nombreJoueurs = controleur.demanderNombreJoueurs();
+        
+        for (int compteurJoueur = 1; compteurJoueur <= nombreJoueurs; compteurJoueur++) {
+            int joueurIsVirtuel = controleur.demanderTypeJoueur(compteurJoueur);
+            
             if (joueurIsVirtuel == 0) {
                 vue.afficherCreationJoueurReel(compteurJoueur);
                 this.joueurs.add(new JoueurReel("Joueur " + compteurJoueur, compteurJoueur));
-                compteurJoueur++;
-            } else if (joueurIsVirtuel == 1) {
-                vue.demanderStrategieJoueurVirtuel(compteurJoueur);
-                int numStrategy = scanner.nextInt();
+            } else {
+                int numStrategy = controleur.demanderStrategieJoueurVirtuel(compteurJoueur);
                 vue.afficherCreationJoueurVirtuel(compteurJoueur);
                 this.joueurs.add(new JoueurVirtuel("Joueur " + compteurJoueur + " (IA)", compteurJoueur, numStrategy));
-                compteurJoueur++;
-            } else {
-                vue.afficherTypeJoueurInvalide();
             }
         }
     }
@@ -130,20 +143,39 @@ public class Jeu implements Serializable {
         this.pioche.melangerCartes();
     }
 
-    public void attribuerTropheePlusGrandJest(ArrayList<Joueur> joueurs, ArrayList<Integer> scoresAvantTrophees, Carte carteTrophee) {
+    public void initialiserExtension() {
+        int extensionChoisie = controleur.demanderExtension();
+        this.extension = extensionChoisie;
+        vue.afficherExtensionChoisie(extensionChoisie);
+    }
+
+    public void initialiserVariante() {
+        int varianteChoisie = controleur.demanderVariante();
+        this.variante = varianteChoisie;
+        vue.afficherVarianteChoisie(varianteChoisie);
+    }
+
+    // ==================== TROPHEES ET SCORES ====================
+    
+    public void attribuerTropheePlusGrandJest(ArrayList<Joueur> joueurs, 
+                                               ArrayList<Integer> scoresAvantTrophees, 
+                                               Carte carteTrophee) {
         int maxScore = Collections.max(scoresAvantTrophees);
         ArrayList<Integer> joueursGagnantsTrophee = new ArrayList<Integer>();
+        
         for (int i = 0; i < scoresAvantTrophees.size(); i++) {
             if (scoresAvantTrophees.get(i) == maxScore) {
                 joueursGagnantsTrophee.add(i);
             }
         }
+        
         if (joueursGagnantsTrophee.size() == 1) {
             Joueur gagnantTrophee = this.joueurs.get(joueursGagnantsTrophee.get(0));
             this.joueurPourTrophee.add(gagnantTrophee.getNumJoueur());
             vue.afficherTropheeRemporte(carteTrophee.getNom(), gagnantTrophee.getNumJoueur());
         } else {
             vue.afficherEgaliteTrophee(carteTrophee.getNom());
+            // ... reste de la logique inchangée
             ArrayList<Integer> valeurMaxPourEgalite = new ArrayList<Integer>();
             for (Integer indiceJoueur : joueursGagnantsTrophee) {
                 Joueur joueur = this.joueurs.get(indiceJoueur);
@@ -189,6 +221,7 @@ public class Jeu implements Serializable {
     }
 
     public void determinerGagnants(CalculateurDeScore calculateur) {
+        // ... méthode inchangée, elle utilise déjà vue
         ArrayList<Integer> scoresAvantTrophees = new ArrayList<Integer>();
         for (Joueur joueur : this.joueurs) {
             scoresAvantTrophees.add(calculateur.getScore(joueur.getJest()));
@@ -377,32 +410,6 @@ public class Jeu implements Serializable {
         }
     }
 
-    public void initialiserExtension() {
-        Scanner scanner = new Scanner(System.in);
-        vue.demanderExtension();
-        int extensionChoisie = scanner.nextInt();
-        if (extensionChoisie == 0 || extensionChoisie == 1) {
-            this.extension = extensionChoisie;
-            vue.afficherExtensionChoisie(extensionChoisie);
-        } else {
-            vue.afficherExtensionInvalide();
-            this.extension = 0;
-        }
-    }
-
-    public void initialiserVariante() {
-        Scanner scanner = new Scanner(System.in);
-        vue.demanderVariante();
-        int varianteChoisie = scanner.nextInt();
-        if (varianteChoisie == 0 || varianteChoisie == 1) {
-            this.variante = varianteChoisie;
-            vue.afficherVarianteChoisie(varianteChoisie);
-        } else {
-            vue.afficherVarianteInvalide();
-            this.variante = 0;
-        }
-    }
-
     public boolean sauvegarderPartie(String nomFichier) {
         File directory = new File(SAVE_DIRECTORY);
         if (!directory.exists()) {
@@ -420,7 +427,6 @@ public class Jeu implements Serializable {
 
         } catch (IOException e) {
             vue.afficherErreurSauvegarde(e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }
@@ -433,9 +439,9 @@ public class Jeu implements Serializable {
              ObjectInputStream ois = new ObjectInputStream(fis)) {
 
             Jeu jeuCharge = (Jeu) ois.readObject();
-            jeuCharge.reinitialiserVue();
+            jeuCharge.reinitialiserVueEtControleur();
             instance = jeuCharge;
-            jeuCharge.vue.afficherChargementReussi(cheminComplet);
+            vue.afficherChargementReussi(cheminComplet);
             return jeuCharge;
 
         } catch (FileNotFoundException e) {
@@ -469,69 +475,36 @@ public class Jeu implements Serializable {
     public static boolean supprimerSauvegarde(String nomFichier) {
         String cheminComplet = SAVE_DIRECTORY + nomFichier + SAVE_EXTENSION;
         File fichier = new File(cheminComplet);
-        VueConsole vueTemp = new VueConsole();
 
         if (fichier.exists() && fichier.delete()) {
-            vueTemp.afficherSuppressionReussie(nomFichier);
+            vue.afficherSuppressionReussie(nomFichier);
             return true;
         } else {
-            vueTemp.afficherErreurSuppression(nomFichier);
+            vue.afficherErreurSuppression(nomFichier);
             return false;
         }
     }
 
-    public int getNumeroTourActuel() {
-        return tour.getNumeroTour();
-    }
-
-    public void setNumeroTourActuel(int numero) {
-        this.tour.setNumeroTour(numero);
-    }
-
-    public int getNumTour() {
-        return this.tour.getNumeroTour();
-    }
+    // ==================== GESTIONNAIRE DE PARTIE ====================
 
     public static class GestionnairePartie {
-        private static Scanner scanner = new Scanner(System.in);
-        private static VueConsole vue = new VueConsole();
 
         public static int afficherMenuPrincipal() {
-            vue.afficherMenuPrincipal();
-            vue.demanderChoix();
-            return scanner.nextInt();
+            return controleur.afficherMenuPrincipal();
         }
 
         public static int afficherMenuPause() {
-            vue.afficherMenuPause();
-            vue.demanderChoix();
-            return scanner.nextInt();
+            return controleur.afficherMenuPause();
         }
 
         public static void interfaceSauvegarde(Jeu jeu) {
-            scanner.nextLine();
-            vue.demanderNomSauvegarde();
-            String nomSauvegarde = scanner.nextLine().trim();
-
-            if (nomSauvegarde.isEmpty()) {
-                nomSauvegarde = "partie_" + System.currentTimeMillis();
-            }
-
+            String nomSauvegarde = controleur.demanderNomSauvegarde();
             jeu.sauvegarderPartie(nomSauvegarde);
         }
 
         public static Jeu interfaceChargement() {
             ArrayList<String> sauvegardes = Jeu.listerSauvegardes();
-
-            if (sauvegardes.isEmpty()) {
-                vue.afficherAucuneSauvegarde();
-                return null;
-            }
-
-            vue.afficherListeSauvegardes(sauvegardes);
-            vue.demanderChoixSauvegarde();
-
-            int choix = scanner.nextInt();
+            int choix = controleur.demanderChoixSauvegarde(sauvegardes);
 
             if (choix > 0 && choix <= sauvegardes.size()) {
                 return Jeu.chargerPartie(sauvegardes.get(choix - 1));
@@ -541,16 +514,7 @@ public class Jeu implements Serializable {
 
         public static void interfaceSuppression() {
             ArrayList<String> sauvegardes = Jeu.listerSauvegardes();
-
-            if (sauvegardes.isEmpty()) {
-                vue.afficherAucuneSauvegardeASupprimer();
-                return;
-            }
-
-            vue.afficherListeSauvegardes(sauvegardes);
-            vue.demanderSauvegardeASupprimer();
-
-            int choix = scanner.nextInt();
+            int choix = controleur.demanderSauvegardeASupprimer(sauvegardes);
 
             if (choix > 0 && choix <= sauvegardes.size()) {
                 Jeu.supprimerSauvegarde(sauvegardes.get(choix - 1));
@@ -558,32 +522,31 @@ public class Jeu implements Serializable {
         }
     }
 
+    // ==================== BOUCLE DE JEU ====================
+
     private static void lancerBoucleJeu(Jeu jeuCourant) {
         CalculateurDeScore calculateur = new CalculateurDeScore(jeuCourant);
         boolean continuerPartie = true;
-        VueConsole vue = jeuCourant.getVue();
 
         while (continuerPartie && jeuCourant.pioche.estPiochable()) {
 
             vue.afficherDebutTour(jeuCourant.tour.getNumeroTour());
-            vue.afficherInstructionPause();
-            Scanner scanPause = new Scanner(System.in);
-            String input = scanPause.nextLine();
+            String input = controleur.attendreEntreePause();
 
             if (input.equalsIgnoreCase("P")) {
                 int choixPause = GestionnairePartie.afficherMenuPause();
 
                 switch (choixPause) {
-                    case 1:
+                    case 1: // Reprendre
                         break;
-                    case 2:
+                    case 2: // Sauvegarder
                         GestionnairePartie.interfaceSauvegarde(jeuCourant);
                         break;
-                    case 3:
+                    case 3: // Sauvegarder et quitter
                         GestionnairePartie.interfaceSauvegarde(jeuCourant);
                         continuerPartie = false;
                         break;
-                    case 4:
+                    case 4: // Quitter sans sauvegarder
                         continuerPartie = false;
                         break;
                 }
@@ -604,15 +567,20 @@ public class Jeu implements Serializable {
         }
     }
 
+    // ==================== MAIN ====================
+
     public static void main(String[] args) {
         boolean quitterApplication = false;
-        VueConsole vueMain = new VueConsole();
+
+        // Initialisation statique
+        vue = new VueConsole();
+        controleur = new ControleurConsole(vue);
 
         while (!quitterApplication) {
             int choixPrincipal = GestionnairePartie.afficherMenuPrincipal();
 
             switch (choixPrincipal) {
-                case 1:
+                case 1: // Nouvelle partie
                     Jeu.resetInstance();
                     Jeu jeuCourant = Jeu.getInstance();
                     jeuCourant.initialiserExtension();
@@ -625,24 +593,24 @@ public class Jeu implements Serializable {
                     lancerBoucleJeu(jeuCourant);
                     break;
 
-                case 2:
+                case 2: // Charger partie
                     Jeu jeuCharge = GestionnairePartie.interfaceChargement();
                     if (jeuCharge != null) {
                         lancerBoucleJeu(jeuCharge);
                     }
                     break;
 
-                case 3:
+                case 3: // Supprimer sauvegarde
                     GestionnairePartie.interfaceSuppression();
                     break;
 
-                case 4:
-                    vueMain.afficherAuRevoir();
+                case 4: // Quitter
+                    vue.afficherAuRevoir();
                     quitterApplication = true;
                     break;
 
                 default:
-                    vueMain.afficherChoixInvalide();
+                    vue.afficherChoixInvalide();
                     break;
             }
         }

@@ -62,6 +62,9 @@ public class CalculateurDeScore implements VisiteurDeCarte, Serializable{
 						score -= 1;
 					}
 				}
+				else {
+					score -= valeurbasecourante;
+				}
 
 				continue;
 			}
