@@ -1,4 +1,4 @@
-package jestPackage;
+package jestPackage.Modele;
 import java.io.Serializable;
 public abstract class Trophee implements Serializable{
 	private static final long serialVersionUID = 1L;

@@ -1,4 +1,4 @@
-package jestPackage;
+package jestPackage.Modele;
 import java.util.*;
 import java.io.Serializable;
 public class StrategiePrisePrudente implements StrategiePrise, Serializable {

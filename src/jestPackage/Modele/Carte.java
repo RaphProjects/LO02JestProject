@@ -1,4 +1,4 @@
-package jestPackage;
+package jestPackage.Modele;
 import java.io.Serializable;
 public abstract class Carte implements CarteElement, Serializable {
 	private static final long serialVersionUID = 1L;

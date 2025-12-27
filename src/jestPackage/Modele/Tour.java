@@ -1,4 +1,4 @@
-package jestPackage;
+package jestPackage.Modele;
 import java.util.*;
 import java.io.Serializable;
 
@@ -13,15 +13,15 @@ public class Tour implements Serializable{
 		this.jeu = jeu;
 		this.numeroTour = 1;
 	}
-	
+
 	public void afficherNumeroTour() {
-		System.out.println("----- Tour " + this.numeroTour + " -----");
+		Jeu.vue.afficherNumeroTour(this.numeroTour);
 	}
-	
+
 	public int getNumeroTour() {
 		return this.numeroTour;
 	}
-	
+
 	public void setNumeroTour(int numeroTour) {
 		this.numeroTour = numeroTour;
 	}
@@ -31,7 +31,7 @@ public class Tour implements Serializable{
 		joueursAyantJoueCeTour.clear();
         numeroTour++;
     }
-	
+
 	public void ajouterCarteNonJouee() {
 		for (Joueur joueur : this.jeu.getJoueurs()) {
 			this.cartesNonJouees.add(joueur.getOffre().getCarteRestante());
@@ -42,9 +42,9 @@ public class Tour implements Serializable{
 		ArrayList<Carte> newcartes = new ArrayList<Carte>();
 		// Par sécurité : On vérifie qu'il y a bien une carte nonJouee par joueur
 		if (this.cartesNonJouees.size() != this.jeu.getJoueurs().size() && this.numeroTour > 1) {
-			System.out.println("Erreur : le nombre de cartes non jouées ne correspond pas au nombre de joueurs.");
+			Jeu.vue.afficherErreurNombreCartesNonJouees();
 		}
-		
+
 		newcartes.addAll(this.cartesNonJouees); // On part des cartes non jouées du tour précédent
 		while (newcartes.size() < this.jeu.getJoueurs().size()*2) {// On pioche des cartes jusqu'à en avoir assez pour distribuer 2 par joueur
 			newcartes.add(this.jeu.getPioche().piocher());
@@ -56,12 +56,12 @@ public class Tour implements Serializable{
 		}
 		this.cartesNonJouees.clear();
 	}
-	
+
 	public int joueurAvecLaPlusGrandeValeurVisible(){
 		// Trouver le joueur n'ayant pas deja joué avec la carte visible la plus élevée
 		// Isoler le cas où tout le monde a déjà joué
 		if (this.joueursAyantJoueCeTour.size() == this.jeu.getJoueurs().size()) {
-			System.out.println("Erreur : tous les joueurs ont déjà joué ce tour.");
+			Jeu.vue.afficherErreurTousJoueursOntJoue();
 			return -1;
 		}
 			ArrayList<Carte> cartesVisibles = new ArrayList<Carte>();
@@ -72,9 +72,9 @@ public class Tour implements Serializable{
 						cartePourJoueur.put(joueur.getNumJoueur(),joueur.getOffre().getCarteVisible());
 				}
 			}
-			
+
 			// Isoler les cartes ayant la plus haute valeur
-			
+
 			Map<Integer, Carte> cartePlusHautePourJoueur = new HashMap<>();
 			for (Map.Entry<Integer, Carte> entry : cartePourJoueur.entrySet()) {
 				if (entry.getValue().getValeurBase() == Collections
@@ -82,58 +82,56 @@ public class Tour implements Serializable{
 					cartePlusHautePourJoueur.put(entry.getKey(), entry.getValue());
 				}
 			}
-			
+
 			// Gérer les égalités;
 			// On refait la meme chose mais avec la valeur de couleur
-			
+
 			for (Map.Entry<Integer, Carte> entry : cartePlusHautePourJoueur.entrySet()) {
 				if (entry.getValue().getValeurCouleur() == Collections
 						.max(cartePlusHautePourJoueur.values(), Comparator.comparingInt(Carte::getValeurCouleur))
 						.getValeurCouleur()) {
-					System.out.println("Le joueur " + this.jeu.getJoueurs().get(entry.getKey()-1).nom
-							+ " a la plus grande valeur visible avec la carte " + entry.getValue().toString() + ".");
-					System.out.println("C'est à lui de jouer.");
+					Jeu.vue.afficherJoueurAvecPlusGrandeValeurVisible(this.jeu.getJoueurs().get(entry.getKey()-1).nom, entry.getValue().toString());
+					Jeu.vue.afficherCestAuiDeJouer();
 					return entry.getKey()-1;
 				}
 			}
 		// On ne devrait jamais arriver ici
-		System.out.println("Erreur : impossible de déterminer le joueur avec la plus grande valeur visible.");
+		Jeu.vue.afficherErreurDeterminerJoueurPlusGrandeValeurVisible();
 		return -1;
 	}
-	
+
 	public void gererOffres() {
 		for (Joueur joueur : this.jeu.getJoueurs()) {
 			joueur.deciderOffre();
 		}
 	}
-	
+
 	public void afficherOffres() {
-		System.out.println("Offres des joueurs :");
+		Jeu.vue.afficherOffresDesJoueurs();
 		for (Joueur joueur : this.jeu.getJoueurs()) {
 			Offre offre = joueur.getOffre();
 			String carteVisible = (offre.getCarteVisible() != null) ? offre.getCarteVisible().getNom() : "Aucune";
 			String carteCachee = (offre.getCarteCachee() != null) ? offre.getCarteCachee().getNom() : "Aucune";
-			System.out.println(joueur.nom + " - Carte Visible: " + carteVisible + ", Carte Cachee: " + carteCachee);
+			Jeu.vue.afficherOffreJoueur(joueur.nom, carteVisible, carteCachee);
 		}
 	}
-	
+
 	public void gererPrises() {
 	    int indiceJoueurCourant = joueurAvecLaPlusGrandeValeurVisible(); // Le premier a jouer est toujours celui avec la carte visible la plus élevée
-	    
+
 	    // Boucle jusqu'à ce que tous les joueurs aient joué ce tour
 	    while (this.joueursAyantJoueCeTour.size() < this.jeu.getJoueurs().size()) {
 	    	// DEBUG AFFICHER LES MAINS DE TOUS LES JOUEURS
 	    	for (Joueur j : this.jeu.getJoueurs()) {
-	    		System.out.println("Main de " + j.nom + " : " + j.getMain().toString());
+	    		Jeu.vue.afficherMainJoueur(j.nom, j.getMain().toString());
 	    	}
-	    	
-	    	
+
 	        Joueur joueurCourant = this.jeu.getJoueurs().get(indiceJoueurCourant);
-	        System.out.println("C'est au tour de " + joueurCourant.nom + " de jouer.");
-	        
+	        Jeu.vue.afficherTourJoueur(joueurCourant.nom);
+
 	        int indiceJoueur = 0;
 	        Map<Integer, Integer> joueurPourChoix = new HashMap<>();
-	        
+
 	        // Vérifier si aucune offre est complète chez les autres joueurs
 	        boolean aucunAutreAvecOffreComplete = true;
 
@@ -146,29 +144,29 @@ public class Tour implements Serializable{
 
 	        if (aucunAutreAvecOffreComplete) {
 	            // Le joueur doit prendre une carte de sa propre offre
-	            System.out.println("Toutes les autres offres sont vides. Choisissez dans votre offre.");
-	            System.out.println("1 : Carte Visible - " + joueurCourant.getOffre().getCarteVisible());
-	            System.out.println("2 : Carte Cachée - Inconnue");
-	            
+	            Jeu.vue.afficherChoixDansPropreOffre();
+	            Jeu.vue.afficherOptionCarteVisible(joueurCourant.getOffre().getCarteVisible().getNom());
+	            Jeu.vue.afficherOptionCarteCachee();
+
 	            int choix = -1;
 				if (joueurCourant.isVirtuel()) {// On utilise des méthodes différentes entre joueur réel et virtuel pour le moment
 					choix = ((JoueurVirtuel)joueurCourant).choisirPriseDeSoi(joueurCourant.getJest(), joueurCourant.getOffre());
-					System.out.println("Le joueur Virtuel" + joueurCourant.nom + " a choisi la carte " + choix);
+					Jeu.vue.afficherChoixCarteJoueurVirtuel(joueurCourant.nom, choix);
 				}
 				else {
 					choix = joueurCourant.choisirPrise(2);
 				}
 				joueurCourant.ajouterAsonJest(joueurCourant.donnerCarte(choix == 1));
 	            this.joueursAyantJoueCeTour.add(joueurCourant.getNumJoueur());
-	            
+
 	            break; // On a plus besoin de continuer la boucle principale car le tour est terminé. Un else aurait aussi pu faire l'affaire.
 	        }
-	        
+
 	        // On créé un arraylist des offres pour les joueurs virtuels
 	        ArrayList<Offre> offresAdverse = new ArrayList<>();
 	        // vider offres adverse au cas où
 	        offresAdverse.clear();
-	        
+
 	        // Afficher les offres disponibles des autres joueurs
 	        for (int i = 0; i < this.jeu.getJoueurs().size(); i++) {
 	            Joueur j = this.jeu.getJoueurs().get(i);
@@ -176,50 +174,48 @@ public class Tour implements Serializable{
 	                Offre offre = j.getOffre();
 	                int idxVisible = indiceJoueur * 2 + 1;
 	                int idxCache = indiceJoueur * 2 + 2;
-	                
-	                
+
 	                offresAdverse.add(offre);
-	                
-	                System.out.println("Offre de " + j.nom + " :");
-	                System.out.println(idxVisible + " : Carte Visible - " + offre.getCarteVisible());
-	                System.out.println(idxCache + " : Carte Cachée - Inconnue");
-	                
+
+	                Jeu.vue.afficherOffreDeJoueur(j.nom);
+	                Jeu.vue.afficherOptionCarteVisibleOffre(idxVisible, offre.getCarteVisible().getNom());
+	                Jeu.vue.afficherOptionCarteCacheeOffre(idxCache);
+
 	                joueurPourChoix.put(idxVisible, i);
 	                joueurPourChoix.put(idxCache, i);
 	                indiceJoueur++;
 	            }
 	        }
-	        
+
 	        int numCarteChoisie = -1;
 	        // Traiter le cas des joueurs virtuels
 	        if (joueurCourant.isVirtuel()) {// On utilise des méthodes différentes entre joueur réel et virtuel pour le moment
 	        	numCarteChoisie = ((JoueurVirtuel)joueurCourant).choisirPriseAdverse(joueurCourant.getJest(), offresAdverse);
-				System.out.println("Le joueur Virtuel" + joueurCourant.nom + " a choisi la carte " + numCarteChoisie);
+				Jeu.vue.afficherChoixCarteJoueurVirtuelAdverse(joueurCourant.nom, numCarteChoisie);
 			}
 	        else{
 	        	numCarteChoisie = joueurCourant.choisirPrise(indiceJoueur * 2 + 2);
-	        	System.out.println("Le joueur " + joueurCourant.nom + " a choisi la carte " + numCarteChoisie);
+	        	Jeu.vue.afficherChoixCarteJoueur(joueurCourant.nom, numCarteChoisie);
 	        }
-	        
-	        
+
 	        int prochainIndice = joueurPourChoix.get(numCarteChoisie);
 	        // JoueurVole correspond au joueur qui s'est fait prendre une carte de son offre
 	        Joueur joueurVole = this.jeu.getJoueurs().get(prochainIndice);
-	        System.out.println("Le joueur " + joueurVole.nom + " s'est fait prendre une carte.");
-	        
+	        Jeu.vue.afficherJoueurSeFaitPrendreCarte(joueurVole.nom);
+
 	        joueurCourant.ajouterAsonJest(joueurVole.donnerCarte(numCarteChoisie % 2 != 0));
 	        this.joueursAyantJoueCeTour.add(joueurCourant.getNumJoueur());
-	        
+
 	        // Déterminer le prochain joueur
 	        indiceJoueurCourant = this.joueursAyantJoueCeTour.contains(joueurVole.getNumJoueur()) ? joueurAvecLaPlusGrandeValeurVisible() : prochainIndice;
 	    }
-	    
-	    // TEMPORAIRE Afficher les jests
+
+	    // Afficher les jests, on désactive car c'est surtout pour debug, les joueurs ne sont pas censés connaitre les jests
+	    /*
 	    for (Joueur joueur : this.jeu.getJoueurs()) {
-	        System.out.println("Jest de " + joueur.nom + " : ");
+	        Jeu.vue.afficherJestDeJoueur(joueur.nom);
 	        joueur.jest.afficher();
 	    }
+	    */
 	}
-	
-	
 }

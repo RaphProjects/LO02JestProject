@@ -1,4 +1,4 @@
-package jestPackage;
+package jestPackage.Modele;
 import java.util.*;
 import java.io.Serializable;
 
@@ -15,7 +15,8 @@ public class JoueurVirtuel extends Joueur implements Serializable{
 		else if (numStrategy == 2)
 			this.strategyPrise = new StrategiePriseAleatoire();
 		else {
-			System.out.println("Numéro de stratégie invalide, on utilise la stratégie prudente par défaut.");
+			Jeu.vue.afficherStrategieDefaut();
+			
 			this.strategyPrise = new StrategiePrisePrudente();
 		}
 		

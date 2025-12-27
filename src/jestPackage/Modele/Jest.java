@@ -1,4 +1,4 @@
-package jestPackage;
+package jestPackage.Modele;
 import java.util.*;
 import java.io.Serializable;
 public class Jest implements Serializable {
@@ -10,10 +10,8 @@ public class Jest implements Serializable {
 	}
 	
 	public void afficherJest() {
-		System.out.println("Cartes dans le Jest :");
-		for (Carte carte : cartes) {
-			System.out.println("- " + carte.getNom());
-		}
+		Jeu.vue.afficherCartesJest(cartes);
+		
 	}
 
 	public void afficher() {

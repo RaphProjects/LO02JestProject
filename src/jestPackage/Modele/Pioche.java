@@ -1,4 +1,4 @@
-package jestPackage;
+package jestPackage.Modele;
 import java.util.*;
 import java.io.Serializable;
 
@@ -114,7 +114,8 @@ public class Pioche implements Serializable{
 	
 	public Carte piocher() {
 		if (this.cartes.isEmpty()) {
-			System.out.println("La pioche est vide.");
+			Jeu.vue.afficherPiocheVide();
+			
 			return null;
 		}
 		return this.cartes.remove(0);

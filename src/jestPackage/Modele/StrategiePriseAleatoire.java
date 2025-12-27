@@ -1,4 +1,4 @@
-package jestPackage;
+package jestPackage.Modele;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package jestPackage;
+package jestPackage.Modele;
 
 import java.util.*;
 import java.util.Random;
@@ -24,12 +24,13 @@ public class StrategieOffreDeuxSurTrois implements StrategieOffre, Serializable 
         
         if (tirage < 2) {
             // 2/3 des cas (tirage = 0 ou 1) : carte faible visible
-        	System.out.print("L'IA a choisi " + carteFaible.toString() + " comme carte visible.\n");
+        	
+        	Jeu.vue.afficherCarteChoisieIA(carteFaible.toString());
             return new Offre(carteFaible, carteForte);
         } 
         else {
             // 1/3 des cas (tirage = 2) : carte forte visible
-        	System.out.print("L'IA a choisi " + carteForte.toString() + " comme carte visible.\n");
+        	Jeu.vue.afficherCarteChoisieIA(carteForte.toString());
             return new Offre(carteForte, carteFaible);
         }
     }

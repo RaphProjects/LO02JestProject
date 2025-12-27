@@ -1,4 +1,4 @@
-package jestPackage;
+package jestPackage.Modele;
 import java.util.*;
 import java.io.Serializable;
 
@@ -20,9 +20,7 @@ public class CalculateurDeScore implements VisiteurDeCarte, Serializable{
 	public int getScore(Jest jest) {
 		ArrayList<Carte> cartes = jest.getCartes();
 		int score = jest.valeurTotaleCoeurs(); // On initialise à la valeur des coeurs qui est calculée au sein de la classe jest
-		System.out.println("Score initial : " + score);
 		for (Carte carte : cartes) {
-			System.out.println("Carte : " + carte.getNom());
 			
 			
 			CarteElement visitable = (CarteElement) carte;
@@ -36,18 +34,13 @@ public class CalculateurDeScore implements VisiteurDeCarte, Serializable{
 					}
 				}
 				if(nbrDeCoeurs==0) {
-					System.out.println("Score += 4");
 					score+=4;
-				}
-				else {
-					System.out.println("Joker nul");
 				}
 			}
 			
 			// Si la carte est coeur, on la passe
 
 			if (carte.getCouleur() == Couleur.COEUR) {
-				System.out.println("Score += 0");
 				continue;
 			}
 			
@@ -63,18 +56,13 @@ public class CalculateurDeScore implements VisiteurDeCarte, Serializable{
 						}
 					}
 					if (estseulecartedecettecouleur) {
-						System.out.println("Score -= 5");
 						score -= 5;
 					} 
 					else {
-						System.out.println("Score -= 1");
 						score -= 1;
 					}
 				}
-				else {
-					System.out.println("Score -= " + valeurbasecourante);
-						score -= valeurbasecourante;
-				}
+
 				continue;
 			}
 			if(carte.getCouleur()==Couleur.PIQUE || carte.getCouleur()==Couleur.TREFLE) {
@@ -89,17 +77,14 @@ public class CalculateurDeScore implements VisiteurDeCarte, Serializable{
 					}
 					if (estseulecartedecettecouleur) {
 			
-						System.out.println("Score += 5");
 						score += 5;
 						
 					} 
 					else {
-						System.out.println("Score += 1");
 						score += 1;
 					}
 				}
 				else {
-					System.out.println("Score += " + valeurbasecourante);
 					score += valeurbasecourante;
 				}
 				// gestion des pairs
@@ -120,7 +105,6 @@ public class CalculateurDeScore implements VisiteurDeCarte, Serializable{
 				
 	        }
 		}
-		System.out.println(" ");
 		return score;
 	}
 
