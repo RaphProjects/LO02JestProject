@@ -8,12 +8,14 @@ import java.io.*;
 public class Jeu implements Serializable {
     private static final long serialVersionUID = 1L;
     
+    public static boolean modeGraphique = false;
+    
     private ArrayList<Joueur> joueurs = new ArrayList<Joueur>();
     private ArrayList<Carte> trophees = new ArrayList<Carte>();
     private ArrayList<Integer> joueurPourTrophee = new ArrayList<Integer>();
     
     // Transient car non sérialisables
-    public static transient VueConsole vue;
+    public static transient IVue vue;
     public static transient IControleur controleur;
 
     private Pioche pioche;
@@ -47,12 +49,14 @@ public class Jeu implements Serializable {
      * Réinitialise la vue et le contrôleur (après chargement ou création)
      */
     public void reinitialiserVueEtControleur() {
-        if (vue == null) {
-            vue = new VueConsole();
-        }
-        if (controleur == null) {
-            controleur = new ControleurConsole(vue);
-        }
+    	if(!modeGraphique) {
+	        if (vue == null) {
+	            vue = new VueConsole();
+	        }
+	        if (controleur == null) {
+	            controleur = new ControleurConsole((VueConsole) vue);
+	        }
+    	}
     }
 
     // ==================== GETTERS ====================
@@ -69,7 +73,8 @@ public class Jeu implements Serializable {
         return this.extension;
     }
 
-    public VueConsole getVue() {
+    public IVue getVue() {
+    	
         return vue;
     }
 
@@ -573,9 +578,10 @@ public class Jeu implements Serializable {
         boolean quitterApplication = false;
 
         // Initialisation statique
-        vue = new VueConsole();
-        controleur = new ControleurConsole(vue);
-
+        if(!modeGraphique) {
+	        vue = new VueConsole();
+	        controleur = new ControleurConsole((VueConsole) vue);
+        }
         while (!quitterApplication) {
             int choixPrincipal = GestionnairePartie.afficherMenuPrincipal();
 
