@@ -43,7 +43,6 @@ public interface IVue {
 
 	void afficherEgaliteParfaiteTrophee(String nom);
 
-
 	void afficherEgaliteTrophee(String nom);
 
 	void afficherErreurDeterminerJoueurPlusGrandeValeurVisible();

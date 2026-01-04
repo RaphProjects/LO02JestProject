@@ -57,6 +57,14 @@ public class Jeu implements Serializable {
 	            controleur = new ControleurConsole((VueConsole) vue);
 	        }
     	}
+    	else {
+    		if(vue == null) {
+    			vue = new VueGraphique();
+    		}
+    		if (controleur == null) {
+	            controleur = new ControleurGraphique((VueGraphique) vue);
+    		}
+    	}
     }
 
     // ==================== GETTERS ====================
@@ -581,6 +589,10 @@ public class Jeu implements Serializable {
         if(!modeGraphique) {
 	        vue = new VueConsole();
 	        controleur = new ControleurConsole((VueConsole) vue);
+        }
+        else {
+        	vue = new VueGraphique();
+        	controleur = new ControleurGraphique((VueGraphique) vue);
         }
         while (!quitterApplication) {
             int choixPrincipal = GestionnairePartie.afficherMenuPrincipal();
