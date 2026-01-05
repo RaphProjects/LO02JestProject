@@ -149,4 +149,9 @@ public interface IControleur {
      * @return le numéro du choix (1-based)
      */
     int demanderChoixPrise(String nomJoueur, int nbPossibilites);
+
+    /**
+     * Ferme les ressources utilisées par le contrôleur (ex: Scanner)
+     */
+    void fermer();
 }

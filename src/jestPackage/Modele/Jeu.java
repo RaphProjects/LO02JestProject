@@ -8,7 +8,7 @@ import java.io.*;
 public class Jeu implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    public static boolean modeGraphique = false;
+    public static boolean modeGraphique = true;
     
     private ArrayList<Joueur> joueurs = new ArrayList<Joueur>();
     private ArrayList<Carte> trophees = new ArrayList<Carte>();
@@ -593,6 +593,7 @@ public class Jeu implements Serializable {
         else {
         	vue = new VueGraphique();
         	controleur = new ControleurGraphique((VueGraphique) vue);
+        	System.out.println("Interface Graphique instanciée");
         }
         while (!quitterApplication) {
             int choixPrincipal = GestionnairePartie.afficherMenuPrincipal();
