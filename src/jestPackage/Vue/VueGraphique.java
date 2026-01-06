@@ -103,11 +103,12 @@ public class VueGraphique implements IVue {
         
         // Panel des trophees (en haut du centre)
         tropheePanel = new JPanel();
-        tropheePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 20));
+        // Utilisation de FlowLayout avec un espacement suffisant
+        tropheePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 10));
         tropheePanel.setOpaque(false);  // Transparent pour voir le fond vert
         tropheePanel.setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(new Color(255, 215, 0), 3),  // Bordure doree
-            "Trophees en jeu",
+            "Trophées en jeu",
             javax.swing.border.TitledBorder.CENTER,
             javax.swing.border.TitledBorder.TOP,
             new Font("Arial", Font.BOLD, 18),
@@ -133,6 +134,69 @@ public class VueGraphique implements IVue {
     }
     
     /**
+     * Convertit la chaîne brute du modèle (toString) en un affichage HTML compact et lisible
+     */
+    private String formaterConditionTrophee(String conditionBrute) {
+        if (conditionBrute == null) return "";
+        
+        String texte = conditionBrute;
+        String couleurTexte = "white"; // Couleur par défaut du texte
+
+        // --- Cas Trophée Couleur ---
+        // Ex: TropheeCouleur[ordre=PLUSGRAND, couleurDeCondition=COEUR]
+        if (texte.contains("TropheeCouleur")) {
+            String ordre = "";
+            String symbole = "";
+            
+            // Déterminer l'ordre
+            if (texte.contains("PLUSGRAND")) ordre = "Plus grand";
+            else if (texte.contains("PLUSPETIT")) ordre = "Plus petit";
+            else ordre = "Best";
+            
+            // Déterminer la couleur et le symbole
+            if (texte.contains("COEUR")) { symbole = "♥ Cœur"; couleurTexte = "#ff9999"; } // Rouge clair
+            else if (texte.contains("CARREAU")) { symbole = "♦ Carreau"; couleurTexte = "#ff9999"; }
+            else if (texte.contains("PIQUE")) { symbole = "♠ Pique"; couleurTexte = "#ccccff"; } // Bleu clair
+            else if (texte.contains("TREFLE")) { symbole = "♣ Trèfle"; couleurTexte = "#ccccff"; }
+            
+            return "<html><center>" + ordre + "<br><span style='color:" + couleurTexte + "; font-size:14px;'>" + symbole + "</span></center></html>";
+        }
+        
+        // --- Cas Trophée Incolore ---
+        // Ex: TropheeIncolore[condition=MAJORITÉ, valeurAssociée=4]
+        else if (texte.contains("TropheeIncolore")) {
+            String condition = "";
+            
+            if (texte.contains("JOKER")) condition = "Joker";
+            else if (texte.contains("PLUSGRANDJEST_SANSJOKER")) condition = "Meilleur Jest<br>(Sans Joker)";
+            else if (texte.contains("PLUSGRANDJEST")) condition = "Meilleur Jest";
+            else if (texte.contains("MAJORITÉ")) {
+                condition = "Majorité";
+                // Extraction de la valeur associée si présente
+                if (texte.contains("valeurAssociée=")) {
+                    try {
+                        // Cherche le chiffre après "valeurAssociée="
+                        String valStr = texte.substring(texte.indexOf("valeurAssociée=") + 15);
+                        // Nettoyage basique (prend le premier caractère ou jusqu'au crochet)
+                        valStr = valStr.replace("]", "").trim();
+                        // Si c'est un chiffre simple
+                        if(valStr.length() > 0) condition += " de " + valStr.charAt(0);
+                    } catch (Exception e) {
+                        // Ignore parsing error
+                    }
+                }
+            } else {
+                condition = "Spécial";
+            }
+            
+            return "<html><center>" + condition + "</center></html>";
+        }
+        
+        // Fallback si format inconnu
+        return texte;
+    }
+
+    /**
      * Met a jour l'affichage des trophees dans le panneau central
      */
     private void rafraichirAffichageTrophees() {
@@ -147,20 +211,26 @@ public class VueGraphique implements IVue {
                 // Creer un panneau pour chaque trophee
                 for (int i = 0; i < tropheesNoms.size(); i++) {
                     String nomTrophee = tropheesNoms.get(i);
-                    String condition = (i < tropheesConditions.size()) ? tropheesConditions.get(i) : "";
+                    // Récupère la condition brute et la formate
+                    String conditionBrute = (i < tropheesConditions.size()) ? tropheesConditions.get(i) : "";
+                    String conditionFormattee = formaterConditionTrophee(conditionBrute);
                     
                     JPanel unTrophee = new JPanel();
                     unTrophee.setLayout(new BoxLayout(unTrophee, BoxLayout.Y_AXIS));
                     unTrophee.setOpaque(false);
+                    // Bordure invisible pour espacer les trophées
+                    unTrophee.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
                     
                     // Image du trophee
                     ImageIcon iconTrophee = getIconeCarte(nomTrophee);
-                    JLabel imageLabel = new JLabel(iconTrophee);
+                    // Redimensionner un peu plus petit pour le panel info
+                    Image img = iconTrophee.getImage().getScaledInstance(80, 120, Image.SCALE_SMOOTH);
+                    JLabel imageLabel = new JLabel(new ImageIcon(img));
                     imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
                     
-                    // Condition du trophee en dessous
-                    JLabel conditionLabel = new JLabel("<html><center>" + condition + "</center></html>");
-                    conditionLabel.setFont(new Font("Arial", Font.BOLD, 11));
+                    // Condition du trophee en dessous (Texte formaté)
+                    JLabel conditionLabel = new JLabel(conditionFormattee);
+                    conditionLabel.setFont(new Font("Arial", Font.BOLD, 12));
                     conditionLabel.setForeground(Color.WHITE);
                     conditionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
                     conditionLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -372,7 +442,7 @@ public class VueGraphique implements IVue {
         String valeur = "";
         String couleur = "";
 
-        // Detection de la valeur (attention a l'ordre pour eviter les faux positifs)
+        // Detection de la valeur
         if (lower.contains("ace") || lower.equals("as") || lower.startsWith("as ") || lower.contains(" as ") || lower.endsWith(" as")) valeur = "As";
         else if (lower.contains("two") || lower.contains("deux") || lower.contains("2")) valeur = "Deux";
         else if (lower.contains("three") || lower.contains("trois") || lower.contains("3")) valeur = "Trois";
@@ -436,10 +506,15 @@ public class VueGraphique implements IVue {
     
     @Override 
     public void afficherInfosTrophee(Carte carte) { 
-        log("  " + carte.getNom() + " : " + carte.getBandeauTrophee().toString());
-        // Stocker le trophee pour l'affichage permanent
+        // On logue la version "Brute" pour le debug
+        String conditionBrute = carte.getBandeauTrophee().toString();
+        log("  " + carte.getNom() + " : " + conditionBrute);
+        
+        // Stocker le trophee pour l'affichage graphique
         tropheesNoms.add(carte.getNom());
-        tropheesConditions.add(carte.getBandeauTrophee().toString());
+        tropheesConditions.add(conditionBrute);
+        
+        // La méthode rafraichirAffichageTrophees se chargera de formater le texte
         rafraichirAffichageTrophees();
     }
     
@@ -494,7 +569,6 @@ public class VueGraphique implements IVue {
         }
         
         // Declencher le popup 300ms apres le dernier score recu
-        // Cela permet d'attendre que tous les scores soient enregistres
         timerClassement = new Timer(300, e -> {
             afficherPopupClassement();
         });
