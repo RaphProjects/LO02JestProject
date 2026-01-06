@@ -67,7 +67,7 @@ public class Jeu implements Serializable {
     	}
     }
 
-    // ==================== GETTERS ====================
+    // getters
     
     public ArrayList<Joueur> getJoueurs() {
         return this.joueurs;
@@ -102,7 +102,7 @@ public class Jeu implements Serializable {
         return this.tour.getNumeroTour();
     }
 
-    // ==================== SETTERS ====================
+    // setters
     
     public void setVue(VueConsole vue) {
         Jeu.vue = vue;
@@ -116,7 +116,7 @@ public class Jeu implements Serializable {
         this.tour.setNumeroTour(numero);
     }
 
-    // ==================== INITIALISATION ====================
+    // initialisation
 
     public void setTropheeJeu() {
         if (this.joueurs.size() == 3) {
@@ -168,7 +168,7 @@ public class Jeu implements Serializable {
         vue.afficherVarianteChoisie(varianteChoisie);
     }
 
-    // ==================== TROPHEES ET SCORES ====================
+    // trophees et score
     
     public void attribuerTropheePlusGrandJest(ArrayList<Joueur> joueurs, 
                                                ArrayList<Integer> scoresAvantTrophees, 
@@ -498,7 +498,7 @@ public class Jeu implements Serializable {
         }
     }
 
-    // ==================== GESTIONNAIRE DE PARTIE ====================
+    // Gestionnaire de partie
 
     public static class GestionnairePartie {
 
@@ -535,7 +535,7 @@ public class Jeu implements Serializable {
         }
     }
 
-    // ==================== BOUCLE DE JEU ====================
+    // Boucle de jeu
 
     private static void lancerBoucleJeu(Jeu jeuCourant) {
         CalculateurDeScore calculateur = new CalculateurDeScore(jeuCourant);
@@ -580,7 +580,7 @@ public class Jeu implements Serializable {
         }
     }
 
-    // ==================== MAIN ====================
+    // main
 
     public static void main(String[] args) {
         boolean quitterApplication = false;
