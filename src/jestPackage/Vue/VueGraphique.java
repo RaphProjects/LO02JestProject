@@ -1,34 +1,37 @@
 package jestPackage.Vue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
 import jestPackage.Modele.Carte;
 import jestPackage.Modele.Couleur;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 /**
  * Implémentation graphique de la vue.
- * Affiche les informations dans une fenêtre Swing avec zone de log.
+ * Gère l'affichage des fenêtres et le chargement des images.
  */
 public class VueGraphique implements IVue {
     
     private JFrame frame;
     private JTextArea logArea;
     private JScrollPane scrollPane;
-    private JPanel mainPanel;
-    private JPanel gamePanel;
     private JLabel statusLabel;
+    
+    private Map<String, ImageIcon> imageCache = new HashMap<>();
+    private static final String IMG_FOLDER = "LO02JestImg" + File.separator;
+    
+    private ArrayList<String> optionsPriseEnCours = new ArrayList<>();
+    private String joueurOffreEnCours = "";
     
     public VueGraphique() {
         initializeFrame();
         initializeComponents();
     }
     
-    /**
-     * Initialise la fenêtre principale
-     */
     private void initializeFrame() {
         frame = new JFrame("Jest - Jeu de cartes");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -37,11 +40,7 @@ public class VueGraphique implements IVue {
         frame.setLayout(new BorderLayout());
     }
     
-    /**
-     * Initialise les composants graphiques
-     */
     private void initializeComponents() {
-        // Zone de log (historique du jeu)
         logArea = new JTextArea();
         logArea.setEditable(false);
         logArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
@@ -59,10 +58,9 @@ public class VueGraphique implements IVue {
             new Font("Arial", Font.BOLD, 12),
             Color.WHITE
         ));
-        scrollPane.setPreferredSize(new Dimension(350, 0));
+        scrollPane.setPreferredSize(new Dimension(400, 0));
         scrollPane.getViewport().setBackground(new Color(20, 40, 20));
         
-        // Label de statut
         statusLabel = new JLabel("Bienvenue dans Jest !");
         statusLabel.setFont(new Font("Arial", Font.BOLD, 16));
         statusLabel.setForeground(Color.WHITE);
@@ -71,732 +69,338 @@ public class VueGraphique implements IVue {
         statusLabel.setBackground(new Color(20, 60, 20));
         statusLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        // Panel principal
-        mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(new Color(34, 139, 34));
-        
-        // Panel de jeu central
-        gamePanel = new JPanel(new BorderLayout());
-        gamePanel.setBackground(new Color(34, 139, 34));
+        JPanel centerPanel = new JPanel();
+        centerPanel.setBackground(new Color(34, 139, 34));
+        JLabel logoLabel = new JLabel("🃏 JEST 🃏");
+        logoLabel.setFont(new Font("Serif", Font.BOLD, 60));
+        logoLabel.setForeground(new Color(255, 255, 255, 100));
+        centerPanel.setLayout(new GridBagLayout());
+        centerPanel.add(logoLabel);
+
+        frame.add(centerPanel, BorderLayout.CENTER);
+        frame.add(scrollPane, BorderLayout.EAST);
+        frame.add(statusLabel, BorderLayout.SOUTH);
         
         frame.setVisible(true);
     }
+
+    // ==================== GESTION DES OPTIONS DE PRISE ====================
     
-    // ==================== MÉTHODES UTILITAIRES ====================
-    
+    public ArrayList<String> getEtViderOptionsPrise() {
+        ArrayList<String> result = new ArrayList<>(optionsPriseEnCours);
+        optionsPriseEnCours.clear();
+        joueurOffreEnCours = "";
+        return result;
+    }
+
+    // ==================== GESTION DES IMAGES ====================
+
     /**
-     * Ajoute un message au log avec scroll automatique
+     * Ajoute un texte (ex: nom du joueur) sous l'icône de la carte.
      */
+    public ImageIcon ajouterTexteSousIcone(ImageIcon iconOriginal, String texte) {
+        if (iconOriginal == null) return null;
+        if (texte == null || texte.isEmpty()) return iconOriginal;
+
+        int w = iconOriginal.getIconWidth();
+        int h = iconOriginal.getIconHeight();
+        int textHeight = 20; // Espace pour le texte
+
+        BufferedImage combined = new BufferedImage(w, h + textHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = combined.createGraphics();
+
+        // Dessiner l'image originale
+        g.drawImage(iconOriginal.getImage(), 0, 0, null);
+
+        // Dessiner le fond du texte (optionnel, améliore la lisibilité)
+        g.setColor(new Color(255, 255, 255, 200)); // Blanc semi-transparent
+        g.fillRect(0, h, w, textHeight);
+
+        // Dessiner le texte centré
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, 11));
+        FontMetrics fm = g.getFontMetrics();
+        int textX = (w - fm.stringWidth(texte)) / 2;
+        int textY = h + 14; // Un peu de padding vertical
+
+        g.drawString(texte, Math.max(2, textX), textY);
+        g.dispose();
+
+        return new ImageIcon(combined);
+    }
+
+    public ImageIcon getIconeCarte(String nomCarteBrut) {
+        if (nomCarteBrut == null || nomCarteBrut.trim().isEmpty()) {
+            return genererIconeTexte("Carte");
+        }
+        
+        String cleCache = nomCarteBrut.trim();
+
+        if (imageCache.containsKey(cleCache)) {
+            return imageCache.get(cleCache);
+        }
+
+        String nomFichier = determinerNomFichier(cleCache);
+        String chemin = IMG_FOLDER + nomFichier;
+        File f = new File(chemin);
+        
+        ImageIcon iconFinale;
+
+        if (f.exists()) {
+            ImageIcon icon = new ImageIcon(chemin);
+            Image img = icon.getImage();
+            Image newImg = img.getScaledInstance(120, 180, java.awt.Image.SCALE_SMOOTH);
+            iconFinale = new ImageIcon(newImg);
+        } else {
+            // Fallback texte si image non trouvée
+            String nomAffiche = nettoyerNomPourAffichage(cleCache);
+            iconFinale = genererIconeTexte(nomAffiche);
+        }
+
+        imageCache.put(cleCache, iconFinale);
+        return iconFinale;
+    }
+    
+    private String nettoyerNomPourAffichage(String nom) {
+        if (nom.contains("nom=")) {
+            int start = nom.indexOf("nom=") + 4;
+            int end = nom.indexOf(",", start);
+            if (end == -1) end = nom.indexOf("]", start);
+            if (end != -1) return nom.substring(start, end);
+        }
+        return nom;
+    }
+
+    private ImageIcon genererIconeTexte(String texte) {
+        int w = 120;
+        int h = 180;
+        BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = img.createGraphics();
+
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, w, h);
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(0, 0, w - 1, h - 1);
+
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("Arial", Font.BOLD, 11));
+        FontMetrics fm = g2d.getFontMetrics();
+        
+        String[] mots = texte.split(" ");
+        int y = 60;
+        for (String mot : mots) {
+            if (mot.length() > 12) mot = mot.substring(0, 12) + "..";
+            int x = (w - fm.stringWidth(mot)) / 2;
+            g2d.drawString(mot, Math.max(2, x), y);
+            y += 18;
+        }
+
+        g2d.dispose();
+        return new ImageIcon(img);
+    }
+
+    private String determinerNomFichier(String nom) {
+        if (nom.contains("nom=")) {
+            try {
+                int start = nom.indexOf("nom=") + 4;
+                int end = nom.indexOf(",", start);
+                if (end == -1) end = nom.indexOf("]", start);
+                if (end != -1) nom = nom.substring(start, end);
+            } catch (Exception e) {}
+        }
+        
+        String lower = nom.toLowerCase().trim();
+        
+        if (lower.contains("verso") || lower.contains("cachée") || lower.contains("cache")) {
+            return "FaceVerso.png";
+        }
+        if (lower.contains("joker")) {
+            return "Joker.png";
+        }
+
+        String valeur = "";
+        String couleur = "";
+
+        if (lower.contains("ace") || lower.equals("as") || lower.startsWith("as ") || lower.contains(" as ") || lower.endsWith(" as")) valeur = "As";
+        else if (lower.contains("two") || lower.contains("deux") || lower.contains("2")) valeur = "Deux";
+        else if (lower.contains("three") || lower.contains("trois") || lower.contains("3")) valeur = "Trois";
+        else if (lower.contains("four") || lower.contains("quatre") || lower.contains("4")) valeur = "Quatre";
+        else if (lower.contains("five") || lower.contains("cinq") || lower.contains("5")) valeur = "Cinq";
+
+        if (lower.contains("heart") || lower.contains("coeur")) couleur = "DeCoeur";
+        else if (lower.contains("diamond") || lower.contains("carreau")) couleur = "DeCarreau";
+        else if (lower.contains("spade") || lower.contains("pique")) couleur = "DePique";
+        else if (lower.contains("club") || lower.contains("trefle") || lower.contains("trèfle")) couleur = "DeTrefle";
+
+        if (!valeur.isEmpty() && !couleur.isEmpty()) {
+            return valeur + couleur + ".png";
+        }
+        return nom + ".png";
+    }
+
+    // ==================== GETTERS ====================
+    
+    public JFrame getFrame() { return frame; }
+    public JTextArea getLogArea() { return logArea; }
+    
+    // ==================== LOGS ====================
+
     private void log(String message) {
         SwingUtilities.invokeLater(() -> {
             logArea.append(message + "\n");
             logArea.setCaretPosition(logArea.getDocument().getLength());
         });
     }
-    
-    /**
-     * Met à jour le label de statut
-     */
+
     private void updateStatus(String status) {
         SwingUtilities.invokeLater(() -> {
             statusLabel.setText(status);
         });
     }
-    
-    /**
-     * Crée un bouton stylisé pour le menu
-     */
-    private JButton createMenuButton(String text) {
-        JButton button = new JButton(text);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setFont(new Font("Arial", Font.BOLD, 20));
-        button.setPreferredSize(new Dimension(350, 60));
-        button.setMaximumSize(new Dimension(350, 60));
-        button.setMinimumSize(new Dimension(350, 60));
-        button.setBackground(new Color(139, 69, 19));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setOpaque(true);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                button.setBackground(new Color(160, 82, 45));
-            }
-            
-            @Override
-            public void mouseExited(MouseEvent e) {
-                button.setBackground(new Color(139, 69, 19));
-            }
-        });
-        
-        return button;
-    }
-    
-    /**
-     * Configure l'interface pour le mode jeu
-     */
-    public void setupGameInterface() {
-        frame.getContentPane().removeAll();
-        
-        JPanel container = new JPanel(new BorderLayout());
-        container.setBackground(new Color(34, 139, 34));
-        
-        // Zone centrale pour le plateau de jeu
-        JPanel centerPanel = new JPanel(new GridBagLayout());
-        centerPanel.setOpaque(false);
-        
-        JLabel gameLabel = new JLabel("🃏 Zone de jeu 🃏");
-        gameLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        gameLabel.setForeground(Color.WHITE);
-        centerPanel.add(gameLabel);
-        
-        // Barre de statut en bas
-        JPanel statusPanel = new JPanel(new BorderLayout());
-        statusPanel.setBackground(new Color(20, 60, 20));
-        statusPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        statusPanel.add(statusLabel, BorderLayout.CENTER);
-        
-        container.add(scrollPane, BorderLayout.EAST);
-        container.add(centerPanel, BorderLayout.CENTER);
-        container.add(statusPanel, BorderLayout.SOUTH);
-        
-        frame.getContentPane().add(container);
-        frame.revalidate();
-        frame.repaint();
-    }
-    
-    // ==================== GETTERS ====================
-    
-    public JFrame getFrame() {
-        return frame;
-    }
-    
-    public JTextArea getLogArea() {
-        return logArea;
-    }
-    
-    public JScrollPane getScrollPane() {
-        return scrollPane;
-    }
-    
-    public JLabel getStatusLabel() {
-        return statusLabel;
-    }
-    
-    // ==================== TROPHÉES ====================
-    
-    @Override
-    public void annonceTrophees() {
-        log("═══════════════════════════════════");
-        log("       🏆 TROPHÉES DU JEU 🏆        ");
-        log("═══════════════════════════════════");
-    }
-    
-    @Override
-    public void afficherInfosTrophee(Carte carte) {
-        log("  🏆 " + carte.getNom());
-        log("     Condition : " + carte.getBandeauTrophee().toString());
-    }
-    
-    @Override
-    public void afficherTropheeRemporte(String nomTrophee, int numJoueur) {
-        log("🎉 Le trophée " + nomTrophee + " est remporté par Joueur " + numJoueur + " !");
-    }
-    
-    @Override
-    public void afficherEgaliteTrophee(String nomTrophee) {
-        log("⚖️ Égalité pour le trophée " + nomTrophee + ". Départage par la plus haute carte.");
-    }
-    
-    @Override
-    public void afficherEgaliteParfaiteTrophee(String nomTrophee) {
-        log("❌ Égalité parfaite pour " + nomTrophee + " - Bug détecté !");
-    }
-    
-    @Override
-    public void afficherTropheeNonAttribue(String conditionTrophee) {
-        log("⚠️ Le trophée " + conditionTrophee + " n'a été attribué à aucun joueur.");
-    }
-    
-    @Override
-    public void afficherPlusGrandeCarteCouleur(int numJoueur, Couleur couleur, int valeur) {
-        log("  Joueur " + numJoueur + " : plus grande carte " + couleur + " = " + valeur);
-    }
-    
-    @Override
-    public void afficherPlusPetiteCarteCouleur(int numJoueur, Couleur couleur, int valeur) {
-        log("  Joueur " + numJoueur + " : plus petite carte " + couleur + " = " + valeur);
-    }
-    
-    // ==================== INITIALISATION ====================
-    
-    @Override
-    public void afficherBienvenue() {
-        log("🎮 Bienvenue dans le jeu Jest !");
-        updateStatus("Bienvenue dans Jest !");
-    }
-    
-    @Override
-    public void demanderNombreJoueurs() {
-        log("📝 Configuration : nombre de joueurs...");
-    }
-    
-    @Override
-    public void afficherNombreJoueursInvalide() {
-        log("❌ Nombre de joueurs invalide (3 ou 4 requis).");
-    }
-    
-    @Override
-    public void demanderTypeJoueur(int numJoueur) {
-        log("📝 Configuration du joueur " + numJoueur + "...");
-    }
-    
-    @Override
-    public void afficherCreationJoueurReel(int numJoueur) {
-        log("👤 Joueur " + numJoueur + " créé (réel).");
-    }
-    
-    @Override
-    public void demanderStrategieJoueurVirtuel(int numJoueur) {
-        log("🤖 Configuration IA pour joueur " + numJoueur + "...");
-    }
-    
-    @Override
-    public void afficherCreationJoueurVirtuel(int numJoueur) {
-        log("🤖 Joueur " + numJoueur + " créé (IA).");
-    }
-    
-    @Override
-    public void afficherTypeJoueurInvalide() {
-        log("❌ Type de joueur invalide.");
-    }
-    
-    @Override
-    public void afficherStrategieDefaut() {
-        log("⚙️ Stratégie invalide → stratégie prudente par défaut.");
-    }
-    
-    // ==================== EXTENSION ET VARIANTE ====================
-    
-    @Override
-    public void demanderExtension() {
-        log("📝 Configuration de l'extension...");
-    }
-    
-    @Override
-    public void afficherExtensionChoisie(int extension) {
-        String ext = (extension == 0) ? "Classique" : "Plus de cartes";
-        log("📦 Extension : " + ext);
-    }
-    
-    @Override
-    public void afficherExtensionInvalide() {
-        log("❌ Extension invalide → classique par défaut.");
-    }
-    
-    @Override
-    public void demanderVariante() {
-        log("📝 Configuration de la variante...");
-    }
-    
-    @Override
-    public void afficherVarianteChoisie(int variante) {
-        String var = (variante == 0) ? "Classique" : "Inversée";
-        log("🎲 Variante : " + var);
-    }
-    
-    @Override
-    public void afficherVarianteInvalide() {
-        log("❌ Variante invalide → classique par défaut.");
-    }
-    
-    @Override
-    public void afficherVarianteInversee() {
-        log("🔄 Mode inversé : le score le plus bas gagne !");
-    }
-    
-    // ==================== JEST FINAL ET SCORES ====================
-    
-    @Override
-    public void afficherJestFinalJoueur(int numJoueur) {
-        log("");
-        log("───────────────────────────────────");
-        log("📋 Jest final du Joueur " + numJoueur + " :");
-    }
-    
-    @Override
-    public void afficherCartesJest(ArrayList<Carte> cartes) {
-        for (Carte carte : cartes) {
-            log("   • " + carte.getNom());
-        }
-    }
-    
-    @Override
-    public void afficherClassementFinal() {
-        log("");
-        log("═══════════════════════════════════");
-        log("      🏆 CLASSEMENT FINAL 🏆       ");
-        log("═══════════════════════════════════");
-        updateStatus("🏆 Partie terminée - Classement final");
-    }
-    
-    @Override
-    public void afficherScoreJoueur(int rang, int numJoueur, int score) {
-        String medal;
-        switch (rang) {
-            case 1: medal = "🥇"; break;
-            case 2: medal = "🥈"; break;
-            case 3: medal = "🥉"; break;
-            default: medal = "  "; break;
-        }
-        log(medal + " " + rang + "ᵉ : Joueur " + numJoueur + " → " + score + " points");
-    }
-    
-    // ==================== SAUVEGARDE ET CHARGEMENT ====================
-    
-    @Override
-    public void afficherSauvegardeReussie(String chemin) {
-        log("💾 Partie sauvegardée : " + chemin);
-    }
-    
-    @Override
-    public void afficherErreurSauvegarde(String message) {
-        log("❌ Erreur sauvegarde : " + message);
-    }
-    
-    @Override
-    public void afficherChargementReussi(String chemin) {
-        log("📂 Partie chargée depuis : " + chemin);
-    }
-    
-    @Override
-    public void afficherFichierNonTrouve(String chemin) {
-        log("❌ Fichier non trouvé : " + chemin);
-    }
-    
-    @Override
-    public void afficherErreurLecture(String message) {
-        log("❌ Erreur lecture : " + message);
-    }
-    
-    @Override
-    public void afficherErreurDeserialisation(String message) {
-        log("❌ Erreur chargement : " + message);
-    }
-    
-    @Override
-    public void afficherSuppressionReussie(String nomFichier) {
-        log("🗑️ Sauvegarde supprimée : " + nomFichier);
-    }
-    
-    @Override
-    public void afficherErreurSuppression(String nomFichier) {
-        log("❌ Impossible de supprimer : " + nomFichier);
-    }
-    
-    @Override
-    public void afficherAucuneSauvegarde() {
-        log("📁 Aucune sauvegarde disponible.");
-    }
-    
-    @Override
-    public void afficherAucuneSauvegardeASupprimer() {
-        log("📁 Aucune sauvegarde à supprimer.");
-    }
-    
-    @Override
-    public void afficherNomSauvegardeAuto(String nom) {
-        log("💾 Nom automatique : " + nom);
-    }
-    
-    @Override
-    public void afficherListeSauvegardes(ArrayList<String> sauvegardes) {
-        log("📁 Sauvegardes disponibles :");
-        for (int i = 0; i < sauvegardes.size(); i++) {
-            log("   " + (i + 1) + ". " + sauvegardes.get(i));
-        }
-        log("   0. Annuler");
-    }
-    
-    @Override
-    public void afficherTitreSauvegardes() {
-        log("───── Sauvegardes ─────");
-    }
-    
-    @Override
-    public void afficherElementSauvegarde(int index, String nomSauvegarde) {
-        log("   " + index + ". " + nomSauvegarde);
-    }
-    
-    @Override
-    public void afficherOptionRetour() {
-        log("   0. Retour");
-    }
-    
-    @Override
-    public void demanderChoixSauvegarde() {
-        log("📝 Sélection d'une sauvegarde...");
-    }
-    
-    @Override
-    public void demanderSauvegardeASupprimer() {
-        log("📝 Sélection de la sauvegarde à supprimer...");
-    }
-    
-    @Override
-    public void demanderNomSauvegarde() {
-        log("📝 Demande du nom de sauvegarde...");
-    }
-    
-    // ==================== MENUS ====================
-    
-    @Override
-    public void afficherMenuPrincipal() {
-        frame.getContentPane().removeAll();
-        
-        JPanel menuPanel = new JPanel(new BorderLayout());
-        menuPanel.setBackground(new Color(34, 139, 34));
-        
-        // Panel du titre
-        JPanel titlePanel = new JPanel();
-        titlePanel.setOpaque(false);
-        titlePanel.setBorder(BorderFactory.createEmptyBorder(80, 0, 50, 0));
-        
-        JLabel titleLabel = new JLabel("🃏 BIENVENUE DANS JEST 🃏");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 42));
-        titleLabel.setForeground(Color.WHITE);
-        titlePanel.add(titleLabel);
-        
-        // Panel des boutons (décoratif, les vrais boutons sont dans JOptionPane)
-        JPanel infoPanel = new JPanel();
-        infoPanel.setOpaque(false);
-        JLabel infoLabel = new JLabel("Sélectionnez une option dans la fenêtre de dialogue");
-        infoLabel.setFont(new Font("Arial", Font.ITALIC, 16));
-        infoLabel.setForeground(Color.WHITE);
-        infoPanel.add(infoLabel);
-        
-        menuPanel.add(titlePanel, BorderLayout.NORTH);
-        menuPanel.add(infoPanel, BorderLayout.CENTER);
-        
-        frame.getContentPane().add(menuPanel);
-        frame.revalidate();
-        frame.repaint();
-        
-        log("═══════════════════════════════════");
-        log("        📋 MENU PRINCIPAL          ");
-        log("═══════════════════════════════════");
-    }
-    
-    @Override
-    public void afficherMenuPause() {
-        log("");
-        log("───────────────────────────────────");
-        log("         ⏸️ MENU PAUSE ⏸️          ");
-        log("───────────────────────────────────");
-        updateStatus("⏸️ Partie en pause");
-    }
-    
-    @Override
-    public void demanderChoix() {
-        log("📝 En attente de votre choix...");
-    }
-    
-    // ==================== DÉROULEMENT DU JEU ====================
-    
-    @Override
-    public void afficherDebutTour(int numeroTour) {
-        log("");
-        log("═══════════════════════════════════");
-        log("          🎯 TOUR " + numeroTour + " 🎯            ");
-        log("═══════════════════════════════════");
-        updateStatus("Tour " + numeroTour);
-    }
-    
-    @Override
-    public void afficherNumeroTour(int numeroTour) {
-        log("───── Tour " + numeroTour + " ─────");
-        updateStatus("Tour " + numeroTour + " en cours");
-    }
-    
-    @Override
-    public void afficherInstructionPause() {
-        log("💡 Appuyez sur 'Pause' pour accéder au menu...");
-    }
-    
-    @Override
-    public void afficherFinJeu() {
-        log("");
-        log("═══════════════════════════════════");
-        log("       🏁 FIN DE LA PARTIE 🏁      ");
-        log("═══════════════════════════════════");
-        updateStatus("🏁 Partie terminée");
-    }
-    
-    @Override
-    public void afficherPiocheVide() {
-        log("📦 La pioche est vide.");
-    }
-    
-    @Override
-    public void afficherAuRevoir() {
-        log("👋 Au revoir et merci d'avoir joué !");
-    }
-    
-    @Override
-    public void afficherChoixInvalide() {
-        log("❌ Choix invalide.");
-    }
-    
-    // ==================== AFFICHAGE DES JOUEURS ET CARTES ====================
-    
-    @Override
-    public void afficherTourJoueur(String nomJoueur) {
-        log("");
-        log("▶️ Tour de " + nomJoueur);
-        updateStatus("Tour de " + nomJoueur);
-    }
-    
-    @Override
-    public void afficherCestAuiDeJouer() {
-        log("   → C'est à lui de jouer.");
-    }
-    
-    @Override
-    public void afficherJoueurAvecPlusGrandeValeurVisible(String nomJoueur, String carte) {
-        log("👑 " + nomJoueur + " a la plus grande valeur visible : " + carte);
-    }
-    
-    @Override
-    public void afficherErreurDeterminerJoueurPlusGrandeValeurVisible() {
-        log("❌ Impossible de déterminer le premier joueur.");
-    }
-    
-    @Override
-    public void afficherOffresDesJoueurs() {
-        log("");
-        log("📋 Offres des joueurs :");
-    }
-    
-    @Override
-    public void afficherOffreJoueur(String nomJoueur, String carteVisible, String carteCachee) {
-        log("   " + nomJoueur + " → 👁️ " + carteVisible + " | 🔒 " + carteCachee);
-    }
-    
-    @Override
-    public void afficherOffreDeJoueur(String nomJoueur) {
-        log("   📤 Offre de " + nomJoueur + " :");
-    }
-    
-    @Override
-    public void afficherMainJoueur(String nomJoueur, String main) {
-        log("🃏 Main de " + nomJoueur + " : " + main);
-    }
-    
-    @Override
-    public void afficherMainJoueur() {
-        log("🃏 Votre main :");
-    }
-    
-    @Override
-    public void afficherCarteMain(int index, String carte) {
-        log("   " + (index + 1) + ". " + carte);
-    }
-    
-    @Override
-    public void afficherJestDeJoueur(String nomJoueur) {
-        log("📚 Jest de " + nomJoueur + " :");
-    }
-    
-    @Override
-    public void afficherChoixOffreJoueur(String nomJoueur) {
-        log("🎯 " + nomJoueur + ", choisissez votre offre...");
-    }
-    
-    @Override
-    public void afficherDemandeCarteVisible() {
-        log("   Sélectionnez la carte visible...");
-    }
-    
-    @Override
-    public void afficherCarteChoisiePourOffre(String carte) {
-        log("✅ Carte visible choisie : " + carte);
-    }
-    
-    @Override
-    public void afficherCarteChoisieIA(String carte) {
-        log("🤖 IA : carte visible = " + carte);
-    }
-    
-    // ==================== OPTIONS DE PRISE ====================
-    
-    @Override
-    public void afficherChoixDansPropreOffre() {
-        log("⚠️ Autres offres vides → choisissez dans votre offre.");
-    }
-    
-    @Override
-    public void afficherOptionCarteVisible(String carteVisible) {
-        log("   1️⃣ Visible : " + carteVisible);
-    }
-    
-    @Override
-    public void afficherOptionCarteCachee() {
-        log("   2️⃣ Cachée : ???");
-    }
-    
-    @Override
-    public void afficherOptionCarteVisibleOffre(int idx, String carteVisible) {
-        log("   " + idx + ". Visible : " + carteVisible);
-    }
-    
-    @Override
-    public void afficherOptionCarteCacheeOffre(int idx) {
-        log("   " + idx + ". Cachée : ???");
-    }
-    
-    @Override
-    public void afficherChoixCarteJoueur(String nomJoueur, int numCarte) {
-        log("✅ " + nomJoueur + " prend la carte " + numCarte);
-    }
-    
-    @Override
-    public void afficherChoixCarteJoueurVirtuel(String nomJoueur, int choix) {
-        log("🤖 " + nomJoueur + " (IA) choisit la carte " + choix);
-    }
-    
-    @Override
-    public void afficherChoixCarteJoueurVirtuelAdverse(String nomJoueur, int numCarte) {
-        log("🤖 " + nomJoueur + " (IA) prend la carte " + numCarte);
-    }
-    
-    @Override
-    public void afficherJoueurSeFaitPrendreCarte(String nomJoueur) {
-        log("📤 " + nomJoueur + " perd une carte.");
-    }
-    
-    @Override
-    public void afficherDemandePriseCarte(String nomJoueur) {
-        log("🎯 " + nomJoueur + ", choisissez une carte à prendre...");
-    }
-    
-    @Override
-    public void afficherChoixInvalidePrise() {
-        log("❌ Choix invalide pour la prise.");
-    }
-    
-    @Override
-    public void afficherOptionPrise(int numero, String description) {
-        log("   " + numero + ". " + description);
-    }
-    
-    // ==================== DEMANDES AU CONTRÔLEUR ====================
-    
-    @Override
-    public void afficherDemandeCarteARetourner(int numeroJoueur, ArrayList<String> nomsCartes) {
-        log("");
-        log("🔄 Joueur " + numeroJoueur + ", carte à retourner :");
-        for (int i = 0; i < nomsCartes.size(); i++) {
-            log("   " + (i + 1) + ". " + nomsCartes.get(i));
-        }
-    }
-    
-    @Override
-    public void afficherDemandeJoueurCible(int numeroJoueurActuel, ArrayList<Integer> joueursDisponibles) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < joueursDisponibles.size(); i++) {
-            if (i > 0) sb.append(", ");
-            sb.append("Joueur ").append(joueursDisponibles.get(i));
-        }
-        log("🎯 Joueur " + numeroJoueurActuel + ", chez qui prendre ?");
-        log("   Disponibles : " + sb.toString());
-    }
-    
-    @Override
-    public void afficherJoueurNonDisponible() {
-        log("❌ Ce joueur n'est pas disponible.");
-    }
-    
-    @Override
-    public void afficherDemandeTypeCarte(int numeroJoueurCible, String carteVisibleNom, boolean carteCacheeDisponible) {
-        log("🎴 Chez Joueur " + numeroJoueurCible + " :");
-        if (carteVisibleNom != null) {
-            log("   1. Visible : " + carteVisibleNom);
-        }
-        if (carteCacheeDisponible) {
-            log("   2. Cachée");
-        }
-    }
-    
-    @Override
-    public void afficherDemandeConfirmation(String message) {
-        log("❓ " + message);
-    }
-    
-    // ==================== ERREURS ====================
-    
-    @Override
-    public void afficherErreurNombreCartesNonJouees() {
-        log("❌ Erreur : nombre de cartes non jouées incorrect.");
-    }
-    
-    @Override
-    public void afficherErreurTousJoueursOntJoue() {
-        // Silencieux comme dans VueConsole
-    }
-    
-    // ==================== AFFICHAGES GÉNÉRIQUES ====================
-    
-    @Override
-    public void afficherMessage(String message) {
-        log("💬 " + message);
-    }
-    
-    @Override
-    public void afficherErreur(String message) {
-        log("❌ " + message);
-    }
-    
-    @Override
-    public void afficherLigneVide() {
-        log("");
-    }
-    
-    @Override
-    public void afficherSeparateur() {
-        log("───────────────────────────────────");
-    }
-    
-    @Override
-    public void afficherErreurSaisie() {
-        log("❌ Entrée invalide.");
-    }
-    
-    @Override
-    public void afficherErreurPlage(int min, int max) {
-        log("❌ Valeur hors plage (" + min + "-" + max + ").");
-    }
-    
-    // ==================== NETTOYAGE ====================
-    
-    @Override
-    public void demanderNettoyageConsole() {
-        // Non pertinent pour GUI
-        log("(Nettoyage non applicable en mode graphique)");
-    }
-    
-    @Override
-    public void afficherValeurInvalideNettoyageConsole() {
-        // Non pertinent pour GUI
-    }
-    
-    @Override
-    public void nettoyerConsole() {
-        // Vide le log
-        SwingUtilities.invokeLater(() -> {
-            logArea.setText("");
-        });
-    }
+
+    @Override public void afficherMessage(String message) { log("💬 " + message); }
+    @Override public void afficherErreur(String message) { log("❌ " + message); }
+
+    // ==================== IMPLEMENTATION IVue ====================
+    
+    @Override public void annonceTrophees() { log("\n🏆 --- TROPHÉES --- 🏆"); }
+    @Override public void afficherInfosTrophee(Carte carte) { log("🏆 " + carte.getNom() + " : " + carte.getBandeauTrophee().toString()); }
+    @Override public void afficherTropheeRemporte(String nom, int j) { log("🎉 Trophée " + nom + " remporté par Joueur " + j); }
+    @Override public void afficherEgaliteTrophee(String nom) { log("⚖️ Égalité pour " + nom); }
+    @Override public void afficherEgaliteParfaiteTrophee(String nom) { log("❌ Égalité parfaite " + nom); }
+    @Override public void afficherTropheeNonAttribue(String cond) { log("⚠️ Non attribué : " + cond); }
+    @Override public void afficherPlusGrandeCarteCouleur(int j, Couleur c, int v) { log("  J" + j + " max " + c + " : " + v); }
+    @Override public void afficherPlusPetiteCarteCouleur(int j, Couleur c, int v) { log("  J" + j + " min " + c + " : " + v); }
+    
+    @Override public void afficherBienvenue() { log("🎮 Nouvelle Partie de Jest"); }
+    @Override public void demanderNombreJoueurs() { log("⚙️ Config : Nb Joueurs"); }
+    @Override public void afficherNombreJoueursInvalide() { log("❌ Nb Joueurs invalide"); }
+    @Override public void demanderTypeJoueur(int n) { log("⚙️ Config : Type J" + n); }
+    @Override public void afficherCreationJoueurReel(int n) { log("👤 J" + n + " (Réel) prêt"); }
+    @Override public void demanderStrategieJoueurVirtuel(int n) { log("⚙️ Config : Stratégie J" + n); }
+    @Override public void afficherCreationJoueurVirtuel(int n) { log("🤖 J" + n + " (IA) prêt"); }
+    @Override public void afficherTypeJoueurInvalide() { log("❌ Type invalide"); }
+    @Override public void afficherStrategieDefaut() { log("⚙️ Stratégie par défaut"); }
+    
+    @Override public void demanderExtension() { log("⚙️ Config : Extension"); }
+    @Override public void afficherExtensionChoisie(int e) { log("📦 Extension : " + (e==0?"Non":"Oui")); }
+    @Override public void afficherExtensionInvalide() { log("❌ Extension invalide"); }
+    @Override public void demanderVariante() { log("⚙️ Config : Variante"); }
+    @Override public void afficherVarianteChoisie(int v) { log("🎲 Variante : " + (v==0?"Classique":"Inverse")); }
+    @Override public void afficherVarianteInvalide() { log("❌ Variante invalide"); }
+    @Override public void afficherVarianteInversee() { log("🔄 Mode Inversé actif"); }
+    
+    @Override public void afficherJestFinalJoueur(int n) { log("\n📚 Jest final J" + n); }
+    @Override public void afficherCartesJest(ArrayList<Carte> c) { for(Carte x:c) log("  • " + x.getNom()); }
+    @Override public void afficherClassementFinal() { log("\n🏆 CLASSEMENT FINAL"); }
+    @Override public void afficherScoreJoueur(int r, int n, int s) { log(r + ". Joueur " + n + " : " + s + " pts"); }
+    
+    @Override public void afficherSauvegardeReussie(String p) { log("💾 Sauvegardé : " + p); }
+    @Override public void afficherErreurSauvegarde(String m) { log("❌ Erreur Save : " + m); }
+    @Override public void afficherChargementReussi(String p) { log("📂 Chargé : " + p); }
+    @Override public void afficherFichierNonTrouve(String p) { log("❌ Introuvable : " + p); }
+    @Override public void afficherErreurLecture(String m) { log("❌ Erreur Lecture : " + m); }
+    @Override public void afficherErreurDeserialisation(String m) { log("❌ Erreur Deserialisation : " + m); }
+    @Override public void afficherSuppressionReussie(String n) { log("🗑️ Supprimé : " + n); }
+    @Override public void afficherErreurSuppression(String n) { log("❌ Erreur Suppression : " + n); }
+    @Override public void afficherAucuneSauvegarde() { log("📂 Vide"); }
+    @Override public void afficherAucuneSauvegardeASupprimer() { log("📂 Rien à supprimer"); }
+    @Override public void afficherNomSauvegardeAuto(String n) { log("💾 Nom auto : " + n); }
+    @Override public void afficherListeSauvegardes(ArrayList<String> s) { log("📂 Sauvegardes dispo..."); }
+    @Override public void afficherTitreSauvegardes() {}
+    @Override public void afficherElementSauvegarde(int i, String n) {}
+    @Override public void afficherOptionRetour() {}
+    @Override public void demanderChoixSauvegarde() {}
+    @Override public void demanderSauvegardeASupprimer() {}
+    @Override public void demanderNomSauvegarde() {}
+    
+    @Override public void afficherMenuPrincipal() { log("\n📋 MENU PRINCIPAL"); }
+    @Override public void afficherMenuPause() { log("\n⏸️ MENU PAUSE"); }
+    @Override public void demanderChoix() {}
+    
+    @Override public void afficherDebutTour(int n) { 
+        log("\n════ TOUR " + n + " ════"); 
+        updateStatus("Tour " + n + " en cours");
+    }
+    @Override public void afficherNumeroTour(int n) {}
+    @Override public void afficherInstructionPause() { log("💡 Entrez 'p' pour pause"); }
+    @Override public void afficherFinJeu() { log("🏁 FIN DU JEU"); updateStatus("Partie terminée"); }
+    @Override public void afficherPiocheVide() { log("📦 Pioche vide"); }
+    @Override public void afficherAuRevoir() { log("👋 Au revoir"); frame.dispose(); }
+    @Override public void afficherChoixInvalide() { log("❌ Choix invalide"); }
+    
+    @Override public void afficherTourJoueur(String n) { 
+        log("▶️ Tour de " + n); 
+        updateStatus("Tour de " + n);
+        optionsPriseEnCours.clear();
+    }
+    @Override public void afficherCestAuiDeJouer() { log("👉 C'est à lui de jouer"); }
+    @Override public void afficherJoueurAvecPlusGrandeValeurVisible(String n, String c) { log("👑 " + n + " commence (" + c + ")"); }
+    @Override public void afficherErreurDeterminerJoueurPlusGrandeValeurVisible() { log("❌ Erreur détermination premier joueur"); }
+    
+    @Override public void afficherOffresDesJoueurs() { log("📋 Les offres sont posées."); }
+    @Override public void afficherOffreJoueur(String n, String v, String c) { log("  " + n + " : [👁️" + v + "] [🔒???]"); }
+    
+    @Override public void afficherOffreDeJoueur(String n) { 
+        log("  Offre de " + n);
+        joueurOffreEnCours = n;
+    }
+    
+    @Override public void afficherMainJoueur(String n, String m) { log("🃏 Main " + n + " : " + m); }
+    @Override public void afficherMainJoueur() { log("🃏 Votre main :"); }
+    @Override public void afficherCarteMain(int i, String c) { log("  " + (i+1) + ". " + c); }
+    @Override public void afficherJestDeJoueur(String n) {}
+    @Override public void afficherChoixOffreJoueur(String n) { log("🤔 " + n + " prépare son offre..."); }
+    @Override public void afficherDemandeCarteVisible() {}
+    @Override public void afficherCarteChoisiePourOffre(String c) { log("✅ Carte visible : " + c); }
+    @Override public void afficherCarteChoisieIA(String c) { log("🤖 IA montre : " + c); }
+    
+    @Override public void afficherChoixDansPropreOffre() { 
+        log("⚠️ Doit prendre dans sa propre offre");
+        joueurOffreEnCours = "Votre offre";
+    }
+    
+    @Override public void afficherOptionCarteVisible(String c) {
+        log("  1. Visible : " + c);
+        optionsPriseEnCours.add("Visible:" + c);
+    }
+    
+    @Override public void afficherOptionCarteCachee() {
+        log("  2. Cachée");
+        optionsPriseEnCours.add("Cachée:FaceVerso");
+    }
+    
+    @Override public void afficherOptionCarteVisibleOffre(int i, String c) {
+        log("  " + i + ". Visible : " + c);
+        optionsPriseEnCours.add("Visible:" + c + " (" + joueurOffreEnCours + ")");
+    }
+    
+    @Override public void afficherOptionCarteCacheeOffre(int i) {
+        log("  " + i + ". Cachée");
+        optionsPriseEnCours.add("Cachée:FaceVerso (" + joueurOffreEnCours + ")");
+    }
+    
+    @Override public void afficherChoixCarteJoueur(String n, int num) { log("👉 " + n + " prend la carte " + num); }
+    @Override public void afficherChoixCarteJoueurVirtuel(String n, int c) { log("🤖 " + n + " choisit " + c); }
+    @Override public void afficherChoixCarteJoueurVirtuelAdverse(String n, int c) { log("🤖 " + n + " prend " + c); }
+    @Override public void afficherJoueurSeFaitPrendreCarte(String n) { log("📤 " + n + " donne une carte"); }
+    @Override public void afficherDemandePriseCarte(String n) { log("🤔 " + n + " choisit une carte à prendre..."); }
+    @Override public void afficherChoixInvalidePrise() { log("❌ Prise invalide"); }
+    @Override public void afficherOptionPrise(int n, String d) {}
+    
+    @Override public void afficherDemandeCarteARetourner(int n, ArrayList<String> c) {}
+    @Override public void afficherDemandeJoueurCible(int n, ArrayList<Integer> j) {}
+    @Override public void afficherJoueurNonDisponible() { log("❌ Non dispo"); }
+    @Override public void afficherDemandeTypeCarte(int n, String v, boolean c) {}
+    @Override public void afficherDemandeConfirmation(String m) {}
+    @Override public void afficherErreurNombreCartesNonJouees() { log("❌ Erreur nb cartes"); }
+    @Override public void afficherErreurTousJoueursOntJoue() {}
+    @Override public void afficherLigneVide() {}
+    @Override public void afficherSeparateur() { log("────────────────"); }
+    @Override public void afficherErreurSaisie() { log("❌ Erreur saisie"); }
+    @Override public void afficherErreurPlage(int min, int max) { log("❌ Hors plage " + min + "-" + max); }
+    @Override public void demanderNettoyageConsole() {}
+    @Override public void afficherValeurInvalideNettoyageConsole() {}
+    @Override public void nettoyerConsole() {}
 }
+
