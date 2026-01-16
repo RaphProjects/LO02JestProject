@@ -88,7 +88,7 @@ public class ControleurConsole implements IControleur {
         return ligne;
     }
 
-    // ==================== INITIALISATION ====================
+    // INITIALISATION 
 
     /** {@inheritDoc} */
     @Override
@@ -125,7 +125,7 @@ public class ControleurConsole implements IControleur {
         return lireEntierDansPlage(0, 1);
     }
 
-    // ==================== MENUS ====================
+    // MENUS 
 
     /** {@inheritDoc} */
     @Override
@@ -143,7 +143,7 @@ public class ControleurConsole implements IControleur {
         return lireEntierDansPlage(1, 4);
     }
 
-    // ==================== SAUVEGARDE/CHARGEMENT ====================
+    // SAUVEGARDE/CHARGEMENT 
 
     /** {@inheritDoc} */
     @Override
@@ -184,7 +184,7 @@ public class ControleurConsole implements IControleur {
         return lireEntierDansPlage(0, sauvegardes.size());
     }
 
-    // ==================== GAMEPLAY ====================
+    // GAMEPLAY 
 
     /** {@inheritDoc} */
     @Override

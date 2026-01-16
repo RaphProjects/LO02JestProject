@@ -104,7 +104,7 @@ public class Jeu implements Serializable {
         }
     }
 
-    // ==================== Getters ====================
+    // Getters 
     
     /**
      * Retourne la liste des joueurs de la partie.
@@ -178,7 +178,7 @@ public class Jeu implements Serializable {
         return this.tour.getNumeroTour();
     }
 
-    // ==================== Setters ====================
+    // Setters 
     
     /**
      * Définit la vue du jeu.
@@ -207,7 +207,7 @@ public class Jeu implements Serializable {
         this.tour.setNumeroTour(numero);
     }
 
-    // ==================== Initialisation ====================
+    // Initialisation
 
     /**
      * Initialise les trophées du jeu en piochant les cartes appropriées.
@@ -276,7 +276,7 @@ public class Jeu implements Serializable {
         vue.afficherVarianteChoisie(varianteChoisie);
     }
 
-    // ==================== Trophées et score ====================
+    // Trophées et score 
     
     /**
      * Attribue le trophée "Plus grand Jest" au joueur ayant le score le plus élevé.
@@ -305,7 +305,6 @@ public class Jeu implements Serializable {
             vue.afficherTropheeRemporte(carteTrophee.getNom(), gagnantTrophee.getNumJoueur());
         } else {
             vue.afficherEgaliteTrophee(carteTrophee.getNom());
-            // ... reste de la logique inchangée
             ArrayList<Integer> valeurMaxPourEgalite = new ArrayList<Integer>();
             for (Integer indiceJoueur : joueursGagnantsTrophee) {
                 Joueur joueur = this.joueurs.get(indiceJoueur);
@@ -357,7 +356,6 @@ public class Jeu implements Serializable {
      * @param calculateur le calculateur de score à utiliser
      */
     public void determinerGagnants(CalculateurDeScore calculateur) {
-        // ... méthode inchangée, elle utilise déjà vue
         ArrayList<Integer> scoresAvantTrophees = new ArrayList<Integer>();
         for (Joueur joueur : this.joueurs) {
             scoresAvantTrophees.add(calculateur.getScore(joueur.getJest()));
@@ -546,7 +544,7 @@ public class Jeu implements Serializable {
         }
     }
 
-    // ==================== Sauvegarde et chargement ====================
+    // Sauvegarde et chargement 
 
     /**
      * Sauvegarde la partie actuelle dans un fichier.
@@ -646,7 +644,7 @@ public class Jeu implements Serializable {
         }
     }
 
-    // ==================== Gestionnaire de partie ====================
+    //  Gestionnaire de partie 
 
     /**
      * Classe interne gérant les interfaces utilisateur pour les opérations de partie.
@@ -710,7 +708,7 @@ public class Jeu implements Serializable {
         }
     }
 
-    // ==================== Boucle de jeu ====================
+    // Boucle de jeu 
 
     /**
      * Lance la boucle principale du jeu.
@@ -761,7 +759,7 @@ public class Jeu implements Serializable {
         }
     }
 
-    // ==================== Main ====================
+    // Main 
 
     /**
      * Point d'entrée principal du programme.
