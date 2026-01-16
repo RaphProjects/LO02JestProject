@@ -2,42 +2,120 @@ package jestPackage.Modele;
 import java.util.*;
 import java.io.Serializable;
 
+/**
+ * Représente un tour de jeu.
+ * <p>
+ * Un tour gère :
+ * </p>
+ * <ul>
+ *   <li>la distribution des cartes (en tenant compte des cartes non jouées du tour précédent)</li>
+ *   <li>la création des offres par chaque joueur</li>
+ *   <li>l'ordre de jeu (déterminé par la plus grande carte visible)</li>
+ *   <li>la gestion des prises (prendre dans une offre adverse ou sa propre offre si nécessaire)</li>
+ * </ul>
+ * <p>
+ * Cette classe dépend de la vue et du contrôleur accessibles via {@link Jeu#vue} et
+ * {@link Jeu#controleur} (utilisation indirecte via appels dans les méthodes).
+ * </p>
+ */
 public class Tour implements Serializable{
 	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Numéro du tour (commence à 1).
+	 */
 	private int numeroTour=1;
+
+	/**
+	 * Référence au jeu auquel ce tour appartient.
+	 */
 	private Jeu jeu;
+
+	/**
+	 * Cartes non jouées à la fin d'un tour (cartes restantes dans les offres),
+	 * qui seront redistribuées au tour suivant.
+	 */
 	private ArrayList<Carte> cartesNonJouees = new ArrayList<Carte>();
+
+	/**
+	 * Liste des numéros des joueurs ayant déjà joué pendant ce tour.
+	 */
 	private ArrayList<Integer> joueursAyantJoueCeTour = new ArrayList<Integer>();
 
+	/**
+	 * Construit un tour associé à un jeu.
+	 *
+	 * @param jeu instance du jeu concernée
+	 */
 	public Tour(Jeu jeu) {
 		this.jeu = jeu;
 		this.numeroTour = 1;
 	}
 
+	/**
+	 * Affiche le numéro du tour via la vue.
+	 */
 	public void afficherNumeroTour() {
 		Jeu.vue.afficherNumeroTour(this.numeroTour);
 	}
 
+	/**
+	 * Retourne le numéro du tour.
+	 *
+	 * @return numéro du tour
+	 */
 	public int getNumeroTour() {
 		return this.numeroTour;
 	}
 
+	/**
+	 * Modifie le numéro du tour.
+	 *
+	 * @param numeroTour nouveau numéro de tour
+	 */
 	public void setNumeroTour(int numeroTour) {
 		this.numeroTour = numeroTour;
 	}
 
+	/**
+	 * Passe au tour suivant :
+	 * <ul>
+	 *   <li>stocke les cartes restantes (non jouées) des offres en fin de tour</li>
+	 *   <li>réinitialise la liste des joueurs ayant joué</li>
+	 *   <li>incrémente le numéro de tour</li>
+	 * </ul>
+	 */
 	public void passerAuTourSuivant() {
 		ajouterCarteNonJouee();
 		joueursAyantJoueCeTour.clear();
         numeroTour++;
     }
 
+	/**
+	 * Ajoute aux {@link #cartesNonJouees} la carte restante de l'offre de chaque joueur.
+	 * <p>
+	 * La "carte restante" dépend de l'état de l'offre (carte visible/cachée encore présente).
+	 * </p>
+	 */
 	public void ajouterCarteNonJouee() {
 		for (Joueur joueur : this.jeu.getJoueurs()) {
 			this.cartesNonJouees.add(joueur.getOffre().getCarteRestante());
 		}
 	}
 
+	/**
+	 * Distribue 2 cartes à chaque joueur.
+	 * <p>
+	 * Les cartes distribuées proviennent :
+	 * </p>
+	 * <ol>
+	 *   <li>des cartes non jouées du tour précédent</li>
+	 *   <li>puis de la pioche si nécessaire afin d'atteindre 2 cartes par joueur</li>
+	 * </ol>
+	 * <p>
+	 * Les cartes sont ensuite mélangées avant distribution.
+	 * </p>
+	 */
 	public void distribuerCartes() {
 		ArrayList<Carte> newcartes = new ArrayList<Carte>();
 		// Par sécurité : On vérifie qu'il y a bien une carte nonJouee par joueur
@@ -57,6 +135,15 @@ public class Tour implements Serializable{
 		this.cartesNonJouees.clear();
 	}
 
+	/**
+	 * Détermine le joueur (indice dans la liste {@code jeu.getJoueurs()}) ayant la plus grande
+	 * valeur de carte visible parmi ceux n'ayant pas encore joué ce tour.
+	 * <p>
+	 * En cas d'égalité sur la valeur de base, départage sur la valeur de couleur.
+	 * </p>
+	 *
+	 * @return l'indice (0-based) du joueur sélectionné, ou -1 en cas d'erreur
+	 */
 	public int joueurAvecLaPlusGrandeValeurVisible(){
 		// Trouver le joueur n'ayant pas deja joué avec la carte visible la plus élevée
 		// Isoler le cas où tout le monde a déjà joué
@@ -100,12 +187,21 @@ public class Tour implements Serializable{
 		return -1;
 	}
 
+	/**
+	 * Demande à chaque joueur de décider son offre pour le tour courant.
+	 */
 	public void gererOffres() {
 		for (Joueur joueur : this.jeu.getJoueurs()) {
 			joueur.deciderOffre();
 		}
 	}
 
+	/**
+	 * Affiche les offres de tous les joueurs via la vue.
+	 * <p>
+	 * Affiche le nom de la carte visible et un indicateur pour la carte cachée.
+	 * </p>
+	 */
 	public void afficherOffres() {
 		Jeu.vue.afficherOffresDesJoueurs();
 		for (Joueur joueur : this.jeu.getJoueurs()) {
@@ -116,6 +212,20 @@ public class Tour implements Serializable{
 		}
 	}
 
+	/**
+	 * Gère la phase de prises du tour.
+	 * <p>
+	 * Le premier joueur à jouer est celui ayant la carte visible de plus grande valeur.
+	 * Ensuite, chaque joueur prend une carte :
+	 * </p>
+	 * <ul>
+	 *   <li>chez un adversaire (parmi les offres complètes disponibles)</li>
+	 *   <li>ou dans sa propre offre si aucune offre adverse complète n'est disponible</li>
+	 * </ul>
+	 * <p>
+	 * La méthode maintient la liste {@link #joueursAyantJoueCeTour} afin de savoir qui a joué.
+	 * </p>
+	 */
 	public void gererPrises() {
 	    int indiceJoueurCourant = joueurAvecLaPlusGrandeValeurVisible(); // Le premier a jouer est toujours celui avec la carte visible la plus élevée
 

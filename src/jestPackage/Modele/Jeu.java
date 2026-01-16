@@ -5,35 +5,68 @@ import jestPackage.Vue.*;
 import jestPackage.Controleur.*;
 import java.io.*;
 
+/**
+ * Classe principale du jeu Jest qui gère l'ensemble de la logique du jeu.
+ * Implémente le pattern Singleton pour garantir une instance unique du jeu.
+ * Gère les joueurs, les trophées, la pioche, les tours et la sauvegarde/chargement.
+ */
 public class Jeu implements Serializable {
     private static final long serialVersionUID = 1L;
     
+    /** Indique si le jeu est en mode graphique ou console. */
     public static boolean modeGraphique = true;
     
+    /** Liste des joueurs participant à la partie. */
     private ArrayList<Joueur> joueurs = new ArrayList<Joueur>();
+    
+    /** Liste des cartes trophées de la partie. */
     private ArrayList<Carte> trophees = new ArrayList<Carte>();
+    
+    /** Liste des numéros de joueurs ayant remporté chaque trophée. */
     private ArrayList<Integer> joueurPourTrophee = new ArrayList<Integer>();
     
-    // Transient car non sérialisables
+    /** Vue du jeu (transient car non sérialisable). */
     public static transient IVue vue;
+    
+    /** Contrôleur du jeu (transient car non sérialisable). */
     public static transient IControleur controleur;
 
+    /** Pioche de cartes du jeu. */
     private Pioche pioche;
+    
+    /** Tour actuel du jeu. */
     private Tour tour;
 
+    /** Extension choisie pour la partie. */
     private int extension;
+    
+    /** Variante choisie pour la partie. */
     private int variante;
 
+    /** Répertoire de sauvegarde des parties. */
     private static final String SAVE_DIRECTORY = "saves/";
+    
+    /** Extension des fichiers de sauvegarde. */
     private static final String SAVE_EXTENSION = ".jest";
 
+    /** Instance unique du jeu (pattern Singleton). */
     private static Jeu instance = null;
 
+    /**
+     * Constructeur privé du jeu (pattern Singleton).
+     * Initialise la pioche et réinitialise la vue et le contrôleur.
+     */
     private Jeu() {
         this.pioche = new Pioche(this);
         reinitialiserVueEtControleur();
     }
 
+    /**
+     * Retourne l'instance unique du jeu (pattern Singleton).
+     * Crée l'instance si elle n'existe pas encore.
+     * 
+     * @return l'instance unique du jeu
+     */
     public static Jeu getInstance() {
         if (instance == null) {
             instance = new Jeu();
@@ -41,83 +74,145 @@ public class Jeu implements Serializable {
         return instance;
     }
 
+    /**
+     * Réinitialise l'instance du jeu en créant une nouvelle instance.
+     */
     private static void resetInstance() {
         instance = new Jeu();
     }
 
     /**
-     * Réinitialise la vue et le contrôleur (après chargement ou création)
+     * Réinitialise la vue et le contrôleur après chargement ou création.
+     * Instancie les objets appropriés selon le mode (graphique ou console).
      */
     public void reinitialiserVueEtControleur() {
-    	if(!modeGraphique) {
-	        if (vue == null) {
-	            vue = new VueConsole();
-	        }
-	        if (controleur == null) {
-	            controleur = new ControleurConsole((VueConsole) vue);
-	        }
-    	}
-    	else {
-    		if(vue == null) {
-    			vue = new VueGraphique();
-    		}
-    		if (controleur == null) {
-	            controleur = new ControleurGraphique((VueGraphique) vue);
-    		}
-    	}
+        if (!modeGraphique) {
+            if (vue == null) {
+                vue = new VueConsole();
+            }
+            if (controleur == null) {
+                controleur = new ControleurConsole((VueConsole) vue);
+            }
+        }
+        else {
+            if (vue == null) {
+                vue = new VueGraphique();
+            }
+            if (controleur == null) {
+                controleur = new ControleurGraphique((VueGraphique) vue);
+            }
+        }
     }
 
-    // getters
+    // ==================== Getters ====================
     
+    /**
+     * Retourne la liste des joueurs de la partie.
+     * 
+     * @return la liste des joueurs
+     */
     public ArrayList<Joueur> getJoueurs() {
         return this.joueurs;
     }
 
+    /**
+     * Retourne la pioche du jeu.
+     * 
+     * @return la pioche
+     */
     public Pioche getPioche() {
         return this.pioche;
     }
 
+    /**
+     * Retourne l'extension choisie pour la partie.
+     * 
+     * @return le numéro de l'extension
+     */
     public int getExtension() {
         return this.extension;
     }
 
+    /**
+     * Retourne la vue du jeu.
+     * 
+     * @return la vue
+     */
     public IVue getVue() {
-    	
         return vue;
     }
 
+    /**
+     * Retourne le contrôleur du jeu.
+     * 
+     * @return le contrôleur
+     */
     public IControleur getControleur() {
         return controleur;
     }
 
+    /**
+     * Retourne la liste des trophées de la partie.
+     * 
+     * @return la liste des trophées
+     */
     public ArrayList<Carte> getTrophees() {
         return this.trophees;
     }
 
+    /**
+     * Retourne le numéro du tour actuel.
+     * 
+     * @return le numéro du tour actuel
+     */
     public int getNumeroTourActuel() {
         return tour.getNumeroTour();
     }
 
+    /**
+     * Retourne le numéro du tour actuel.
+     * 
+     * @return le numéro du tour
+     */
     public int getNumTour() {
         return this.tour.getNumeroTour();
     }
 
-    // setters
+    // ==================== Setters ====================
     
+    /**
+     * Définit la vue du jeu.
+     * 
+     * @param vue la vue console à définir
+     */
     public void setVue(VueConsole vue) {
         Jeu.vue = vue;
     }
 
+    /**
+     * Définit le contrôleur du jeu.
+     * 
+     * @param controleur le contrôleur à définir
+     */
     public void setControleur(IControleur controleur) {
         Jeu.controleur = controleur;
     }
 
+    /**
+     * Définit le numéro du tour actuel.
+     * 
+     * @param numero le numéro du tour à définir
+     */
     public void setNumeroTourActuel(int numero) {
         this.tour.setNumeroTour(numero);
     }
 
-    // initialisation
+    // ==================== Initialisation ====================
 
+    /**
+     * Initialise les trophées du jeu en piochant les cartes appropriées.
+     * Le nombre de trophées dépend du nombre de joueurs (2 pour 3 joueurs, 1 sinon).
+     */
     public void setTropheeJeu() {
         if (this.joueurs.size() == 3) {
             for (int i = 0; i < 2; i++) {
@@ -132,6 +227,10 @@ public class Jeu implements Serializable {
         }
     }
 
+    /**
+     * Initialise les joueurs de la partie en demandant leur configuration.
+     * Permet de créer des joueurs réels ou virtuels avec différentes stratégies.
+     */
     public void initialiserJoueurs() {
         vue.afficherBienvenue();
         
@@ -151,25 +250,43 @@ public class Jeu implements Serializable {
         }
     }
 
+    /**
+     * Initialise la pioche du jeu en créant et mélangeant les cartes.
+     */
     public void initialiserPioche() {
         this.pioche.initialiserCartes();
         this.pioche.melangerCartes();
     }
 
+    /**
+     * Initialise l'extension choisie pour la partie.
+     */
     public void initialiserExtension() {
         int extensionChoisie = controleur.demanderExtension();
         this.extension = extensionChoisie;
         vue.afficherExtensionChoisie(extensionChoisie);
     }
 
+    /**
+     * Initialise la variante choisie pour la partie.
+     */
     public void initialiserVariante() {
         int varianteChoisie = controleur.demanderVariante();
         this.variante = varianteChoisie;
         vue.afficherVarianteChoisie(varianteChoisie);
     }
 
-    // trophees et score
+    // ==================== Trophées et score ====================
     
+    /**
+     * Attribue le trophée "Plus grand Jest" au joueur ayant le score le plus élevé.
+     * Gère les égalités en comparant d'abord la plus haute valeur de carte,
+     * puis la valeur de couleur en cas d'égalité persistante.
+     * 
+     * @param joueurs la liste des joueurs candidats au trophée
+     * @param scoresAvantTrophees les scores des joueurs avant attribution des trophées
+     * @param carteTrophee la carte trophée à attribuer
+     */
     public void attribuerTropheePlusGrandJest(ArrayList<Joueur> joueurs, 
                                                ArrayList<Integer> scoresAvantTrophees, 
                                                Carte carteTrophee) {
@@ -233,6 +350,12 @@ public class Jeu implements Serializable {
         }
     }
 
+    /**
+     * Détermine les gagnants de la partie en attribuant les trophées et calculant les scores finaux.
+     * Affiche le classement final des joueurs selon la variante choisie.
+     * 
+     * @param calculateur le calculateur de score à utiliser
+     */
     public void determinerGagnants(CalculateurDeScore calculateur) {
         // ... méthode inchangée, elle utilise déjà vue
         ArrayList<Integer> scoresAvantTrophees = new ArrayList<Integer>();
@@ -423,6 +546,14 @@ public class Jeu implements Serializable {
         }
     }
 
+    // ==================== Sauvegarde et chargement ====================
+
+    /**
+     * Sauvegarde la partie actuelle dans un fichier.
+     * 
+     * @param nomFichier le nom du fichier de sauvegarde (sans extension)
+     * @return true si la sauvegarde a réussi, false sinon
+     */
     public boolean sauvegarderPartie(String nomFichier) {
         File directory = new File(SAVE_DIRECTORY);
         if (!directory.exists()) {
@@ -444,6 +575,12 @@ public class Jeu implements Serializable {
         }
     }
 
+    /**
+     * Charge une partie à partir d'un fichier de sauvegarde.
+     * 
+     * @param nomFichier le nom du fichier de sauvegarde (sans extension)
+     * @return le jeu chargé, ou null en cas d'erreur
+     */
     public static Jeu chargerPartie(String nomFichier) {
         String cheminComplet = SAVE_DIRECTORY + nomFichier + SAVE_EXTENSION;
         VueConsole vueTemp = new VueConsole();
@@ -469,6 +606,11 @@ public class Jeu implements Serializable {
         }
     }
 
+    /**
+     * Liste toutes les sauvegardes disponibles dans le répertoire de sauvegarde.
+     * 
+     * @return la liste des noms de sauvegardes (sans extension)
+     */
     public static ArrayList<String> listerSauvegardes() {
         ArrayList<String> sauvegardes = new ArrayList<>();
         File directory = new File(SAVE_DIRECTORY);
@@ -485,6 +627,12 @@ public class Jeu implements Serializable {
         return sauvegardes;
     }
 
+    /**
+     * Supprime un fichier de sauvegarde.
+     * 
+     * @param nomFichier le nom du fichier à supprimer (sans extension)
+     * @return true si la suppression a réussi, false sinon
+     */
     public static boolean supprimerSauvegarde(String nomFichier) {
         String cheminComplet = SAVE_DIRECTORY + nomFichier + SAVE_EXTENSION;
         File fichier = new File(cheminComplet);
@@ -498,23 +646,47 @@ public class Jeu implements Serializable {
         }
     }
 
-    // Gestionnaire de partie
+    // ==================== Gestionnaire de partie ====================
 
+    /**
+     * Classe interne gérant les interfaces utilisateur pour les opérations de partie.
+     * Fournit des méthodes pour afficher les menus et gérer les sauvegardes.
+     */
     public static class GestionnairePartie {
 
+        /**
+         * Affiche le menu principal et retourne le choix de l'utilisateur.
+         * 
+         * @return le numéro du choix effectué par l'utilisateur
+         */
         public static int afficherMenuPrincipal() {
             return controleur.afficherMenuPrincipal();
         }
 
+        /**
+         * Affiche le menu pause et retourne le choix de l'utilisateur.
+         * 
+         * @return le numéro du choix effectué par l'utilisateur
+         */
         public static int afficherMenuPause() {
             return controleur.afficherMenuPause();
         }
 
+        /**
+         * Affiche l'interface de sauvegarde et sauvegarde la partie.
+         * 
+         * @param jeu le jeu à sauvegarder
+         */
         public static void interfaceSauvegarde(Jeu jeu) {
             String nomSauvegarde = controleur.demanderNomSauvegarde();
             jeu.sauvegarderPartie(nomSauvegarde);
         }
 
+        /**
+         * Affiche l'interface de chargement et charge la partie sélectionnée.
+         * 
+         * @return le jeu chargé, ou null si aucune sauvegarde sélectionnée
+         */
         public static Jeu interfaceChargement() {
             ArrayList<String> sauvegardes = Jeu.listerSauvegardes();
             int choix = controleur.demanderChoixSauvegarde(sauvegardes);
@@ -525,6 +697,9 @@ public class Jeu implements Serializable {
             return null;
         }
 
+        /**
+         * Affiche l'interface de suppression et supprime la sauvegarde sélectionnée.
+         */
         public static void interfaceSuppression() {
             ArrayList<String> sauvegardes = Jeu.listerSauvegardes();
             int choix = controleur.demanderSauvegardeASupprimer(sauvegardes);
@@ -535,8 +710,14 @@ public class Jeu implements Serializable {
         }
     }
 
-    // Boucle de jeu
+    // ==================== Boucle de jeu ====================
 
+    /**
+     * Lance la boucle principale du jeu.
+     * Gère les tours de jeu, le menu pause et la fin de partie.
+     * 
+     * @param jeuCourant le jeu à exécuter
+     */
     private static void lancerBoucleJeu(Jeu jeuCourant) {
         CalculateurDeScore calculateur = new CalculateurDeScore(jeuCourant);
         boolean continuerPartie = true;
@@ -580,20 +761,26 @@ public class Jeu implements Serializable {
         }
     }
 
-    // main
+    // ==================== Main ====================
 
+    /**
+     * Point d'entrée principal du programme.
+     * Initialise l'interface utilisateur et gère le menu principal de l'application.
+     * 
+     * @param args les arguments de ligne de commande (non utilisés)
+     */
     public static void main(String[] args) {
         boolean quitterApplication = false;
 
         // Initialisation statique
-        if(!modeGraphique) {
-	        vue = new VueConsole();
-	        controleur = new ControleurConsole((VueConsole) vue);
+        if (!modeGraphique) {
+            vue = new VueConsole();
+            controleur = new ControleurConsole((VueConsole) vue);
         }
         else {
-        	vue = new VueGraphique();
-        	controleur = new ControleurGraphique((VueGraphique) vue);
-        	System.out.println("Interface Graphique instanciée");
+            vue = new VueGraphique();
+            controleur = new ControleurGraphique((VueGraphique) vue);
+            System.out.println("Interface Graphique instanciée");
         }
         while (!quitterApplication) {
             int choixPrincipal = GestionnairePartie.afficherMenuPrincipal();

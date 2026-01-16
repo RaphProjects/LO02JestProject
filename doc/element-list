@@ -1,0 +1,4 @@
+module:LO02SharedP
+jestPackage.Controleur
+jestPackage.Modele
+jestPackage.Vue
